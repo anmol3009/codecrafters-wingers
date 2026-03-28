@@ -9,10 +9,10 @@ function CarouselSection() {
     <section className="py-24 overflow-hidden border-t-2 border-[#111]" style={{ background: '#FFFAF6' }}>
       <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
         <div className="inline-block bg-[#FFCBA4] border-2 border-[#111] px-4 py-1 mb-4" style={{ boxShadow: '3px 3px 0 #111' }}>
-          <p className="font-body text-xs font-bold tracking-widest uppercase text-[#111]">Explore subjects</p>
+          <p className="font-body text-xs font-bold tracking-widest uppercase text-[#111]">Popular courses</p>
         </div>
-        <h2 className="font-display text-[#111]" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', fontWeight: 700 }}>
-          Drag to discover your learning path
+        <h2 className="font-display text-[#111]" style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)", fontWeight: 700 }}>
+          Start with what excites you
         </h2>
       </div>
       <CardCarousel3D />

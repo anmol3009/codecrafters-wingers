@@ -1,233 +1,235 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-const CARDS = [
+const COURSES = [
   {
-    id: 'mathematics',
+    id: 'algebra',
     icon: '∑',
-    category: 'MATHEMATICS',
-    title: 'Algebra & Calculus',
-    subtitle: '12 courses • Beginner to Advanced',
-    cta: 'Explore Mathematics →',
-    href: '/courses?subject=Mathematics',
-    accent: '#6366f1',
+    category: 'Mathematics',
+    title: 'Algebra Foundations',
+    description: 'Master variables, equations, and functions — the backbone of all higher mathematics.',
+    students: '4,200+',
+    rating: '4.9',
+    level: 'Beginner',
+    href: '/courses',
+    color: '#FFE8D0',
+  },
+  {
+    id: 'calculus',
+    icon: '∫',
+    category: 'Mathematics',
+    title: 'Calculus Mastery',
+    description: 'Derivatives, integrals, and limits explained from first principles with real applications.',
+    students: '3,100+',
+    rating: '4.8',
+    level: 'Intermediate',
+    href: '/courses',
+    color: '#D0EAD0',
   },
   {
     id: 'physics',
     icon: '⚛',
-    category: 'PHYSICS',
-    title: 'Mechanics & Waves',
-    subtitle: '8 courses • Beginner to Intermediate',
-    cta: 'Explore Physics →',
-    href: '/courses?subject=Physics',
-    accent: '#06b6d4',
+    category: 'Physics',
+    title: "Newton's Laws & Mechanics",
+    description: 'Understand force, motion, and energy through structured problem-solving frameworks.',
+    students: '2,800+',
+    rating: '4.7',
+    level: 'Beginner',
+    href: '/courses',
+    color: '#D0E4FF',
   },
   {
     id: 'chemistry',
     icon: '🧪',
-    category: 'CHEMISTRY',
-    title: 'Atoms & Reactions',
-    subtitle: '9 courses • Beginner to Advanced',
-    cta: 'Explore Chemistry →',
-    href: '/courses?subject=Chemistry',
-    accent: '#10b981',
+    category: 'Chemistry',
+    title: 'Atomic Theory & Bonding',
+    description: 'From subatomic particles to molecular bonds — learn why matter behaves the way it does.',
+    students: '2,400+',
+    rating: '4.8',
+    level: 'Intermediate',
+    href: '/courses',
+    color: '#FFD0EA',
   },
   {
-    id: 'ai',
+    id: 'ml',
     icon: '🤖',
-    category: 'COMPUTER SCIENCE',
-    title: 'AI & Machine Learning',
-    subtitle: '6 courses • Intermediate to Advanced',
-    cta: 'Explore CS →',
-    href: '/courses?subject=Computer Science',
-    accent: '#f43f5e',
+    category: 'Computer Science',
+    title: 'Machine Learning Basics',
+    description: 'Supervised learning, neural nets, and model evaluation — with hands-on Python examples.',
+    students: '5,600+',
+    rating: '4.9',
+    level: 'Intermediate',
+    href: '/courses',
+    color: '#E8D0FF',
   },
   {
-    id: 'mock',
-    icon: '📝',
-    category: 'ASSESSMENT',
-    title: 'Mock Test Sprint',
-    subtitle: 'Timed practice with concept diagnosis',
-    cta: 'Start a Mock Test →',
-    href: '/mock-test',
-    accent: '#FFCBA4',
+    id: 'bio',
+    icon: '🧬',
+    category: 'Biology',
+    title: 'Cell Biology & Genetics',
+    description: 'Explore cell structure, DNA replication, and heredity through interactive concept maps.',
+    students: '1,900+',
+    rating: '4.6',
+    level: 'Beginner',
+    href: '/courses',
+    color: '#D0FFE8',
   },
 ]
 
-const CARD_COUNT = CARDS.length
-const RADIUS = 420
+export default function CardCarousel3D() {
+  const [current, setCurrent] = useState(0)
+  const [dir, setDir] = useState(1)
+  const [paused, setPaused] = useState(false)
 
-interface CarouselCardProps {
-  card: (typeof CARDS)[0]
-  index: number
-  rotation: number
-}
+  const goTo = useCallback((index: number) => {
+    setDir(index > current ? 1 : -1)
+    setCurrent(index)
+  }, [current])
 
-function CarouselCard({ card, index, rotation }: CarouselCardProps) {
-  const baseAngle = (index / CARD_COUNT) * 360
-  const angle = baseAngle + rotation
-  const normalizedAngle = ((angle % 360) + 360) % 360
-  const distanceFromFront = Math.abs(normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle)
-  const opacity = Math.max(0.1, 1 - (distanceFromFront / 180) * 0.85)
-  const scale = 1 - (distanceFromFront / 180) * 0.2
+  const next = useCallback(() => {
+    setDir(1)
+    setCurrent(c => (c + 1) % COURSES.length)
+  }, [])
+
+  const prev = useCallback(() => {
+    setDir(-1)
+    setCurrent(c => (c - 1 + COURSES.length) % COURSES.length)
+  }, [])
+
+  useEffect(() => {
+    if (paused) return
+    const id = setInterval(next, 10000)
+    return () => clearInterval(id)
+  }, [paused, next])
+
+  const course = COURSES[current]
 
   return (
     <div
-      style={{
-        position: 'absolute',
-        width: 260,
-        height: 340,
-        left: '50%',
-        top: '50%',
-        marginLeft: -130,
-        marginTop: -170,
-        transform: `rotateY(${baseAngle + rotation}deg) translateZ(${RADIUS}px)`,
-        opacity,
-        scale,
-        transformStyle: 'preserve-3d',
-        willChange: 'transform',
-        transition: 'opacity 0.1s',
-      }}
+      className="max-w-5xl mx-auto px-6"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      <Link to={card.href}>
-        <div
-          className="w-full h-full rounded-2xl flex flex-col justify-between p-7 cursor-pointer group"
-          style={{
-            background: 'rgba(34, 34, 34, 0.8)',
-            border: '1px solid rgba(255, 230, 0, 0.35)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-          }}
-        >
-          {/* Top: category + icon */}
-          <div>
-            <p className="font-body text-gold/70 text-xs tracking-widest uppercase mb-4">
-              {card.category}
-            </p>
-            <div
-              className="text-5xl mb-4"
-              style={{ color: card.accent, fontFamily: 'serif' }}
-            >
-              {card.icon}
-            </div>
-          </div>
-
-          {/* Middle: title */}
-          <div>
-            <h3 className="font-display text-white text-2xl font-light leading-tight mb-2">
-              {card.title}
-            </h3>
-            <p className="font-body text-white/40 text-sm">{card.subtitle}</p>
-          </div>
-
-          {/* Bottom: CTA */}
-          <div
-            className="pt-5 border-t text-sm font-body transition-all duration-300 group-hover:text-gold"
-            style={{ borderColor: 'rgba(255, 230, 0, 0.2)', color: 'rgba(255, 230, 0, 0.7)' }}
-          >
-            {card.cta}
-          </div>
-        </div>
-      </Link>
-    </div>
-  )
-}
-
-export default function CardCarousel3D() {
-  const dragX = useMotionValue(0)
-  const springX = useSpring(dragX, { stiffness: 55, damping: 18, mass: 1.3 })
-  const rotationDeg = useTransform(springX, (x) => x * 0.15)
-
-  const [rotation, setRotation] = useState(0)
-  const lastDragRef = useRef(0)
-
-  useEffect(() => {
-    return rotationDeg.on('change', val => setRotation(val))
-  }, [rotationDeg])
-
-  const snapToNearest = () => {
-    const step = 360 / CARD_COUNT
-    const currentRot = rotationDeg.get()
-    const nearestCard = Math.round(currentRot / step)
-    const snapDeg = nearestCard * step
-    dragX.set(snapDeg / 0.15)
-  }
-
-  const [activeIndex, setActiveIndex] = useState(0)
-  useEffect(() => {
-    const step = 360 / CARD_COUNT
-    const normalized = (((-rotation) % 360) + 360) % 360
-    const idx = Math.round(normalized / step) % CARD_COUNT
-    setActiveIndex((CARD_COUNT - idx) % CARD_COUNT)
-  }, [rotation])
-
-  return (
-    <div className="relative w-full overflow-hidden" style={{ height: 480 }}>
-      {/* Drag capture layer */}
-      <motion.div
-        className="absolute inset-0 cursor-grab active:cursor-grabbing z-10"
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.04}
-        onDrag={(_, info) => {
-          const delta = info.delta.x
-          lastDragRef.current += delta
-          dragX.set(dragX.get() + delta)
-        }}
-        onDragEnd={snapToNearest}
-      />
-
-      {/* 3D scene */}
+      {/* Main card */}
       <div
-        style={{
-          perspective: '1200px',
-          perspectiveOrigin: '50% 50%',
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          inset: 0,
-        }}
+        className="relative border-2 border-[#111] overflow-hidden"
+        style={{ boxShadow: '6px 6px 0 #111', minHeight: 340 }}
       >
-        <div
-          style={{
-            transformStyle: 'preserve-3d',
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            width: 0,
-            height: 0,
-          }}
+        {/* Animated background accent */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={course.id + '-bg'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: course.color }}
+          />
+        </AnimatePresence>
+
+        {/* Card content */}
+        <AnimatePresence mode="wait" custom={dir}>
+          <motion.div
+            key={course.id}
+            custom={dir}
+            initial={{ x: dir > 0 ? 120 : -120, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: dir > 0 ? -120 : 120, opacity: 0 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 flex flex-col md:flex-row items-center gap-10 p-10 md:p-14"
+          >
+            {/* Left: icon + meta */}
+            <div className="flex-shrink-0 flex flex-col items-center md:items-start gap-4">
+              <div
+                className="w-24 h-24 border-2 border-[#111] flex items-center justify-center text-5xl"
+                style={{ background: '#fff', boxShadow: '4px 4px 0 #111' }}
+              >
+                {course.icon}
+              </div>
+              <span
+                className="font-body text-xs font-bold px-3 py-1 border-2 border-[#111] uppercase tracking-widest"
+                style={{ background: '#fff', boxShadow: '2px 2px 0 #111' }}
+              >
+                {course.level}
+              </span>
+            </div>
+
+            {/* Right: text */}
+            <div className="flex-1 text-center md:text-left">
+              <p className="font-body text-[#555] text-xs font-bold uppercase tracking-widest mb-2">
+                {course.category}
+              </p>
+              <h3
+                className="font-display text-[#111] font-bold mb-4 leading-tight"
+                style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)' }}
+              >
+                {course.title}
+              </h3>
+              <p className="font-body text-[#444] text-base leading-relaxed mb-6 max-w-lg">
+                {course.description}
+              </p>
+              <div className="flex flex-wrap items-center gap-6 justify-center md:justify-start">
+                <span className="font-body text-sm font-bold text-[#111]">⭐ {course.rating}</span>
+                <span className="font-body text-sm text-[#555]">{course.students} students</span>
+                <Link to={course.href}>
+                  <button
+                    className="font-body font-bold text-sm px-6 py-2.5 border-2 border-[#111] bg-[#111] text-white transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
+                    style={{ boxShadow: '3px 3px 0 #555' }}
+                  >
+                    Explore Course →
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Arrow buttons */}
+        <button
+          onClick={prev}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 border-2 border-[#111] bg-white flex items-center justify-center font-bold text-lg transition-all hover:bg-[#FFCBA4]"
+          style={{ boxShadow: '2px 2px 0 #111' }}
         >
-          {CARDS.map((card, i) => (
-            <CarouselCard
-              key={card.id}
-              card={card}
-              index={i}
-              rotation={rotation}
-            />
-          ))}
-        </div>
+          ←
+        </button>
+        <button
+          onClick={next}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 border-2 border-[#111] bg-white flex items-center justify-center font-bold text-lg transition-all hover:bg-[#FFCBA4]"
+          style={{ boxShadow: '2px 2px 0 #111' }}
+        >
+          →
+        </button>
+
+        {/* Auto-progress bar */}
+        {!paused && (
+          <motion.div
+            key={course.id + '-bar'}
+            className="absolute bottom-0 left-0 h-1 bg-[#111]"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 10, ease: 'linear' }}
+          />
+        )}
       </div>
 
-      {/* Navigation dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20 pointer-events-none">
-        {CARDS.map((_, i) => (
-          <div
-            key={i}
-            className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-2 mt-5">
+        {COURSES.map((c, i) => (
+          <button
+            key={c.id}
+            onClick={() => goTo(i)}
+            className="border-2 border-[#111] transition-all duration-200"
             style={{
-              background: i === activeIndex ? '#FFCBA4' : 'rgba(255,255,255,0.2)',
-              width: i === activeIndex ? 20 : 6,
+              width: i === current ? 28 : 10,
+              height: 10,
+              background: i === current ? '#FFCBA4' : '#fff',
+              boxShadow: '2px 2px 0 #111',
             }}
           />
         ))}
       </div>
-
-      {/* Drag hint */}
-      <p className="absolute bottom-4 right-6 text-white/20 font-body text-xs z-20 pointer-events-none">
-        drag to explore
-      </p>
     </div>
   )
 }
