@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/Button'
-import ConceptGraph from './ConceptGraph'
+import DiagnosisGraph from './DiagnosisGraph'
 import { annotateChain, findRootCause } from '../../lib/conceptEngine'
 import { useUserProgress } from '../../lib/useUserProgress'
 import mcqBank from '../../data/mcq-bank.json'
@@ -23,7 +23,17 @@ interface MCQEngineProps {
   questionIds: string[]
   onComplete: () => void
   sectionTitle: string
+  courseId: string
+  sectionId: string
 }
+
+const COMMON_APPROACHES = [
+  "I tried to isolate the variable but got confused by the signs",
+  "I misapplied the distributive property",
+  "I thought I should divide first before adding/subtracting",
+  "I miscalculated the arithmetic part",
+  "I don't recall this prerequisite concept"
+]
 
 function getQuestions(ids: string[]): MCQQuestion[] {
   return (mcqBank as MCQQuestion[]).filter(q => ids.includes(q.id))
@@ -35,7 +45,7 @@ function pickQuestion(questions: MCQQuestion[], usedIds: string[]): MCQQuestion 
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-export default function MCQEngine({ questionIds, onComplete, sectionTitle }: MCQEngineProps) {
+export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...props }: MCQEngineProps) {
   const allQuestions = getQuestions(questionIds)
   const [usedIds, setUsedIds] = useState<string[]>([])
   const [currentQ, setCurrentQ] = useState<MCQQuestion>(() => pickQuestion(allQuestions, []))
@@ -60,8 +70,8 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle }: MCQ
     recordMCQAttempt({
       questionId: currentQ.id,
       concept: currentQ.concept,
-      courseId: '',
-      sectionId: '',
+      courseId: props.courseId,
+      sectionId: props.sectionId,
       correct: isCorrect,
       timestamp: Date.now(),
     })
@@ -213,21 +223,41 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle }: MCQ
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl p-4 mb-5">
-                <p className="font-body text-ink-soft text-sm mb-3">
-                  What was your approach? <span className="text-ink-muted">(helps our AI diagnose your gap)</span>
+              <div className="glass-card rounded-xl p-6 mb-8 border-red-500/30">
+                <p className="font-display text-ink text-xl mb-6 text-center">
+                  What was your approach?
                 </p>
-                <textarea
-                  value={approach}
-                  onChange={e => setApproach(e.target.value)}
-                  placeholder="e.g. I tried dividing first, then moved the constants..."
-                  className="w-full bg-ink/5 border border-ink/10 rounded-lg p-3 text-ink font-body text-sm resize-none outline-none focus:border-gold/40 placeholder:text-ink-muted min-h-[80px]"
-                />
+                <div className="grid gap-3">
+                  {COMMON_APPROACHES.map((app, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setApproach(app)}
+                      className={`w-full text-left px-4 py-3 border-2 font-body text-sm transition-all ${
+                        approach === app 
+                          ? 'border-[#111] bg-[#FFCBA4] shadow-brutal-sm' 
+                          : 'border-ink/10 hover:border-ink/30 hover:bg-ink/5'
+                      }`}
+                    >
+                      {app}
+                    </button>
+                  ))}
+                  <textarea
+                    value={!COMMON_APPROACHES.includes(approach) ? approach : ''}
+                    onChange={e => setApproach(e.target.value)}
+                    placeholder="Other: Type your approach here..."
+                    className="w-full bg-ink/5 border-2 border-ink/10 rounded-sm p-4 text-ink font-body text-sm resize-none outline-none focus:border-[#111] placeholder:text-ink-muted min-h-[100px]"
+                  />
+                </div>
               </div>
 
-              <Button variant="primary" className="w-full" onClick={handleSubmitApproach}>
-                Analyze My Mistake
-              </Button>
+              <div className="flex gap-4">
+                <Button variant="ghost" className="flex-1" onClick={() => setMcqState('wrong')}>
+                  Back
+                </Button>
+                <Button variant="primary" className="flex-[2]" onClick={handleSubmitApproach} disabled={!approach}>
+                  Analyze My Mistake →
+                </Button>
+              </div>
             </motion.div>
           )}
 
@@ -262,33 +292,26 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle }: MCQ
               </div>
 
               {/* Concept chain */}
-              <div className="mb-5">
-                <p className="font-body text-ink-muted text-xs uppercase tracking-wider mb-3">
-                  Concept dependency chain
-                </p>
-                <ConceptGraph nodes={chainNodes} />
+              {/* Diagnosis Graph */}
+              <div className="mb-8">
+                <DiagnosisGraph chain={chainNodes} rootCause={rootCause} />
               </div>
 
-              {/* Approach echo */}
-              {approach && (
-                <div className="glass-card rounded-xl p-3 mb-5">
-                  <p className="font-body text-ink-muted text-xs mb-1">Your approach</p>
-                  <p className="font-body text-ink-soft text-sm italic">"{approach}"</p>
-                  <p className="font-body text-gold/70 text-xs mt-2">
-                    → Suggests confusion with variable isolation in {currentQ.concept}
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-gold/10 border border-gold/20 rounded-xl p-4 mb-6">
-                <p className="font-body text-gold text-sm">
-                  📚 Revise <strong>{rootCause}</strong> first, then retry this question.
+              <div className="bg-[#FFFAF6] border-2 border-[#111] p-6 mb-8" style={{ boxShadow: '6px 6px 0 #FFCBA4' }}>
+                <p className="font-body text-[#111] text-sm leading-relaxed">
+                  <span className="font-bold">Next Step:</span> We recommend pausing this section and revisiting <strong>{rootCause}</strong>. 
+                  Our analysis shows that clarifying this prerequisite will make {currentQ.concept} much easier to grasp.
                 </p>
               </div>
 
-              <Button variant="primary" className="w-full" onClick={handleRestart}>
-                Try a New Question
-              </Button>
+              <div className="flex gap-4">
+                <Button variant="ghost" className="flex-1" onClick={handleRestart}>
+                  Retry MCQ
+                </Button>
+                <Button variant="primary" className="flex-1" onClick={handleRestart}>
+                  Go to {rootCause}
+                </Button>
+              </div>
             </motion.div>
           )}
 

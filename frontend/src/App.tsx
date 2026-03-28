@@ -8,6 +8,7 @@ const CoursePlayer = lazy(() => import('./pages/CoursePlayer'))
 const MyCourses = lazy(() => import('./pages/MyCourses'))
 const TeacherInsights = lazy(() => import('./pages/TeacherInsights'))
 const MockTest = lazy(() => import('./pages/MockTest'))
+const Scorecard = lazy(() => import('./pages/Scorecard'))
 const IntroExperience = lazy(() => import('./components/intro/IntroExperience'))
 import Navbar from './components/navigation/Navbar'
 
@@ -49,6 +50,7 @@ function MainSite() {
             <Route path="/my-courses" element={<PageTransition><MyCourses /></PageTransition>} />
             <Route path="/teacher-insights" element={<PageTransition><TeacherInsights /></PageTransition>} />
             <Route path="/mock-test" element={<PageTransition><MockTest /></PageTransition>} />
+            <Route path="/scorecard" element={<PageTransition><Scorecard /></PageTransition>} />
           </Routes>
         </AnimatePresence>
       </Suspense>

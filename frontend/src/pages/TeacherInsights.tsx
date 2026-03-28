@@ -108,29 +108,29 @@ export default function TeacherInsights() {
         {/* Charts row */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Enrollment trend */}
-          <div className="lg:col-span-2 glass-navy rounded-2xl p-6">
-            <h3 className="font-display text-ink text-xl mb-6">Enrollment Trend</h3>
+          <div className="lg:col-span-2 bg-white border-2 border-[#111] p-8" style={{ boxShadow: '8px 8px 0 #111' }}>
+            <h3 className="font-display text-[#111] text-2xl mb-6 font-bold">Enrollment Trend</h3>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={enrollmentData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
-                <XAxis dataKey="month" stroke="rgba(0,0,0,0.2)" tick={{ fill: 'rgba(0,0,0,0.45)', fontSize: 12, fontFamily: 'Inter' }} />
-                <YAxis stroke="rgba(0,0,0,0.2)" tick={{ fill: 'rgba(0,0,0,0.45)', fontSize: 12, fontFamily: 'Inter' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                <XAxis dataKey="month" stroke="#111" tick={{ fill: '#666', fontSize: 12, fontFamily: 'Inter' }} />
+                <YAxis stroke="#111" tick={{ fill: '#666', fontSize: 12, fontFamily: 'Inter' }} />
                 <Tooltip {...TOOLTIP_STYLE} />
                 <Line
-                  type="monotone"
+                  type="step"
                   dataKey="enrollments"
                   stroke="#FFCBA4"
-                  strokeWidth={2.5}
-                  dot={{ fill: '#FFCBA4', r: 4, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: '#FFFAF6', strokeWidth: 0 }}
+                  strokeWidth={3}
+                  dot={{ fill: '#111', r: 4, strokeWidth: 2, stroke: '#FFCBA4' }}
+                  activeDot={{ r: 6, fill: '#111', strokeWidth: 2, stroke: '#FFCBA4' }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Completion pie */}
-          <div className="glass-navy rounded-2xl p-6">
-            <h3 className="font-display text-ink text-xl mb-6">Completion Rate</h3>
+          <div className="bg-white border-2 border-[#111] p-8" style={{ boxShadow: '8px 8px 0 #111' }}>
+            <h3 className="font-display text-[#111] text-2xl mb-6 font-bold">Completion Rate</h3>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
@@ -139,8 +139,10 @@ export default function TeacherInsights() {
                   cy="50%"
                   innerRadius={55}
                   outerRadius={80}
-                  paddingAngle={3}
+                  paddingAngle={5}
                   dataKey="value"
+                  stroke="#111"
+                  strokeWidth={2}
                 >
                   {completionData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
@@ -149,14 +151,14 @@ export default function TeacherInsights() {
                 <Tooltip {...TOOLTIP_STYLE} />
               </PieChart>
             </ResponsiveContainer>
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2 mt-4">
               {completionData.map(d => (
-                <div key={d.name} className="flex items-center justify-between font-body text-sm">
+                <div key={d.name} className="flex items-center justify-between font-body text-xs font-bold uppercase tracking-widest">
                   <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
-                    <span className="text-ink-soft">{d.name}</span>
+                    <div className="w-3 h-3 border border-[#111]" style={{ background: d.color }} />
+                    <span className="text-[#666]">{d.name}</span>
                   </div>
-                  <span className="text-ink">{d.value}%</span>
+                  <span className="text-[#111]">{d.value}%</span>
                 </div>
               ))}
             </div>
@@ -164,16 +166,18 @@ export default function TeacherInsights() {
         </div>
 
         {/* Weak concepts bar chart */}
-        <div className="glass-navy rounded-2xl p-6 mb-8">
-          <h3 className="font-display text-ink text-xl mb-2">Common Weak Concepts</h3>
-          <p className="font-body text-ink-muted text-sm mb-6">Number of students struggling with each concept</p>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="bg-[#FFFAF6] border-2 border-[#111] p-8 mb-8" style={{ boxShadow: '12px 12px 0 #111' }}>
+          <h3 className="font-display text-[#111] text-3xl mb-2 font-bold flex items-center gap-3">
+            <span className="text-red-500">⚠</span> Common Weak Concepts
+          </h3>
+          <p className="font-body text-[#666] text-sm mb-8 uppercase tracking-widest font-bold">Number of students requiring root-cause intervention</p>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={weakConceptsData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" horizontal={false} />
-              <XAxis type="number" stroke="rgba(0,0,0,0.2)" tick={{ fill: 'rgba(0,0,0,0.45)', fontSize: 12, fontFamily: 'Inter' }} />
-              <YAxis dataKey="concept" type="category" width={160} tick={{ fill: 'rgba(0,0,0,0.55)', fontSize: 12, fontFamily: 'Inter' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#eee" horizontal={false} />
+              <XAxis type="number" stroke="#111" tick={{ fill: '#666', fontSize: 12, fontFamily: 'Inter' }} />
+              <YAxis dataKey="concept" type="category" width={160} tick={{ fill: '#111', fontSize: 12, fontFamily: 'Inter', fontWeight: 'bold' }} />
               <Tooltip {...TOOLTIP_STYLE} />
-              <Bar dataKey="count" fill="#FFCBA4" radius={[0, 6, 6, 0]} />
+              <Bar dataKey="count" fill="#FFCBA4" stroke="#111" strokeWidth={2} radius={[0, 0, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
