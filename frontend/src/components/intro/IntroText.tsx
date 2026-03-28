@@ -169,10 +169,8 @@ export default function IntroText({ onComplete }: IntroTextProps) {
 
       {/* Logo */}
       <div className="absolute top-8 left-8 flex items-center gap-3 z-10">
-        <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
-          <span className="font-display text-navy-dark font-bold text-lg">CQ</span>
-        </div>
-        <p className="font-display text-white font-semibold text-lg">ConceptIQ</p>
+        <img src="/image.png" alt="Saraswati Logo" className="w-10 h-10 object-contain" />
+        <p className="font-display text-black font-bold text-lg">SARASWATI</p>
       </div>
 
       {/* Frame counter */}

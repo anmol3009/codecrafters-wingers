@@ -24,7 +24,7 @@ export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) 
     <Modal open={open} onClose={onClose}>
       <div className="space-y-6">
           <div>
-            <h2 className="font-display text-2xl text-white mb-1">Welcome to ConceptIQ</h2>
+            <h2 className="font-display text-2xl text-white mb-1">Welcome to SARASWATI</h2>
             <p className="text-white/50 font-body text-sm">Sign in to access your learning dashboard</p>
           </div>
 

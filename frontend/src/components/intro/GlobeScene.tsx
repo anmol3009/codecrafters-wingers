@@ -22,7 +22,7 @@ const CARDS = [
   { category: 'CAMPUS', title: 'Study Spaces', img: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500&q=80' },
   { category: 'SCHOOL LIFE', title: 'Class Discussions', img: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=500&q=80' },
   { category: 'LEARNING', title: 'Prerequisite Graphs', img: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&q=80' },
-  { category: 'ENROLMENTS', title: 'Join ConceptIQ', img: 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=500&q=80' },
+  { category: 'ENROLMENTS', title: 'Join SARASWATI', img: 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=500&q=80' },
 ]
 
 const N = CARDS.length
@@ -163,10 +163,8 @@ export default function GlobeScene({ onContinue }: GlobeSceneProps) {
 
       {/* Logo */}
       <div className="absolute top-8 left-8 z-20 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center flex-shrink-0">
-          <span className="font-display text-navy-dark font-bold text-lg">CQ</span>
-        </div>
-        <p className="font-display text-white font-semibold text-lg">ConceptIQ</p>
+        <img src="/image.png" alt="Saraswati Logo" className="w-10 h-10 object-contain" />
+        <p className="font-display text-black font-bold text-lg">SARASWATI</p>
       </div>
 
       {/* Hamburger */}

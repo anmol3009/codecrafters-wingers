@@ -50,11 +50,9 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 bg-[#FFCBA4] border-2 border-[#111] flex items-center justify-center" style={{ boxShadow: '2px 2px 0 #111' }}>
-              <span className="font-display text-[#111] font-bold text-lg">CQ</span>
-            </div>
+            <img src="/image.png" alt="Saraswati Logo" className="w-10 h-10 object-contain" />
             <div className="hidden sm:block">
-              <p className="font-display text-[#111] font-bold text-lg leading-tight tracking-tight">ConceptIQ</p>
+              <p className="font-display text-black font-bold text-xl leading-tight tracking-tight uppercase">SARASWATI</p>
               <p className="text-[#666] text-xs font-body leading-tight">AI Root Learning</p>
             </div>
           </Link>
