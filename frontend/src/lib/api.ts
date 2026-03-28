@@ -93,6 +93,8 @@ export const api = {
   // ── MCQ ───────────────────────────────────────────────────────────────────
 
   mcq: {
+    generate: (courseId: string, sectionId: string, token: string) =>
+      req<{ mcq: any }>('GET', `/mcq/generate/${courseId}/${sectionId}`, undefined, token),
     mock: () => req<{ questions: any[] }>('GET', '/mcq/mock'),
     submit: (
       payload: {
@@ -100,6 +102,7 @@ export const api = {
         sectionId: string
         questionId: string
         selectedAnswer: number
+        dynamicQuestion?: any
         explanationText?: string
         conceptTested?: string
       },
