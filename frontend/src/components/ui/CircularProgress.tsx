@@ -26,7 +26,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(250,129,18,0.15)"
+          stroke="rgba(255,230,0,0.15)"
           strokeWidth={strokeWidth}
         />
         {/* Progress */}
@@ -35,7 +35,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#FA8112"
+          stroke="#FFCBA4"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}

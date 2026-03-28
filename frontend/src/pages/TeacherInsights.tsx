@@ -16,8 +16,8 @@ const enrollmentData = [
 ]
 
 const completionData = [
-  { name: 'Completed', value: 72, color: '#FA8112' },
-  { name: 'In Progress', value: 18, color: '#F5E7C6' },
+  { name: 'Completed', value: 72, color: '#FFCBA4' },
+  { name: 'In Progress', value: 18, color: '#FFF8F2' },
   { name: 'Not Started', value: 10, color: '#2e2e2e' },
 ]
 
@@ -41,14 +41,14 @@ const students = [
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#FAF3E1',
-    border: '1px solid rgba(250,129,18,0.3)',
+    background: '#FFFAF6',
+    border: '1px solid rgba(255,230,0,0.3)',
     borderRadius: 12,
     color: '#222222',
     fontFamily: 'Inter',
     fontSize: 12,
   },
-  labelStyle: { color: '#FA8112' },
+  labelStyle: { color: '#FFCBA4' },
 }
 
 function StatCard({ value, label, icon, delta }: { value: string; label: string; icon: string; delta?: string }) {
@@ -119,10 +119,10 @@ export default function TeacherInsights() {
                 <Line
                   type="monotone"
                   dataKey="enrollments"
-                  stroke="#FA8112"
+                  stroke="#FFCBA4"
                   strokeWidth={2.5}
-                  dot={{ fill: '#FA8112', r: 4, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: '#FAF3E1', strokeWidth: 0 }}
+                  dot={{ fill: '#FFCBA4', r: 4, strokeWidth: 0 }}
+                  activeDot={{ r: 6, fill: '#FFFAF6', strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -173,7 +173,7 @@ export default function TeacherInsights() {
               <XAxis type="number" stroke="rgba(0,0,0,0.2)" tick={{ fill: 'rgba(0,0,0,0.45)', fontSize: 12, fontFamily: 'Inter' }} />
               <YAxis dataKey="concept" type="category" width={160} tick={{ fill: 'rgba(0,0,0,0.55)', fontSize: 12, fontFamily: 'Inter' }} />
               <Tooltip {...TOOLTIP_STYLE} />
-              <Bar dataKey="count" fill="#FA8112" radius={[0, 6, 6, 0]} />
+              <Bar dataKey="count" fill="#FFCBA4" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

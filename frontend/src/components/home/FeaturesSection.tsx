@@ -96,12 +96,12 @@ export default function FeaturesSection() {
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
-              className={`feature-card p-7 rounded-2xl border transition-all duration-300 hover:border-gold/40 hover:-translate-y-1 ${
+              className={`feature-card p-7 border-2 border-[#111] transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 ${
                 feature.highlight
-                  ? 'border-gold/40 bg-gold/5'
-                  : 'border-ink/8 bg-white/3 hover:bg-ink/5'
+                  ? 'bg-[#FFCBA4]'
+                  : 'bg-white hover:bg-[#FFFAF6]'
               }`}
-              style={{ opacity: 0 }}
+              style={{ opacity: 0, boxShadow: '4px 4px 0 #111' }}
             >
               <div className="text-3xl mb-4">{feature.icon}</div>
               <h3 className="font-display text-ink text-xl font-light mb-3">

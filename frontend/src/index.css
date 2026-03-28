@@ -3,13 +3,11 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply scroll-smooth;
-  }
+  html { scroll-behavior: smooth; }
 
   body {
     background: #FFFFFF;
-    color: #222222;
+    color: #111111;
     font-family: Inter, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -20,7 +18,7 @@
   h1, h2, h3, h4 {
     font-family: 'Cormorant Garamond', Georgia, serif;
     margin: 0;
-    color: #222222;
+    color: #111111;
   }
 
   p { margin: 0; }
@@ -30,31 +28,25 @@
 }
 
 @layer components {
-  .gold-border {
-    @apply border border-gold/40;
-  }
-
-  /* Light glass card */
+  /* Neo-brutalist card */
   .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(250, 129, 18, 0.15);
-    border-radius: 1rem;
+    background: #FFFFFF;
+    border: 2px solid #111111;
+    box-shadow: 4px 4px 0px #111111;
+    border-radius: 4px;
   }
 
-  /* Cream card */
   .glass-navy {
-    background: rgba(250, 243, 225, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(250, 129, 18, 0.2);
-    border-radius: 1rem;
+    background: #FFFFFF;
+    border: 2px solid #111111;
+    box-shadow: 4px 4px 0px #111111;
+    border-radius: 4px;
   }
+
+  .gold-border { border: 2px solid #FFCBA4; }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, #FA8112 0%, #FFB347 50%, #D4690A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #111111;
   }
 
   .section-padding {
@@ -68,7 +60,7 @@
   .backface-hidden { backface-visibility: hidden; }
 }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #FAF3E1; }
-::-webkit-scrollbar-thumb { background: #FA811266; border-radius: 2px; }
-::selection { background: rgba(250, 129, 18, 0.2); color: #222222; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FFFAF6; }
+::-webkit-scrollbar-thumb { background: #FFCBA4; border: 1px solid #111; }
+::selection { background: #FFCBA4; color: #111111; }

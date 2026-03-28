@@ -137,7 +137,7 @@ export default function GlobeScene({ onContinue }: GlobeSceneProps) {
               >
                 <p style={{
                   fontSize: 8,
-                  color: '#FA8112',
+                  color: '#FFCBA4',
                   fontFamily: 'Inter, sans-serif',
                   letterSpacing: '0.18em',
                   textTransform: 'uppercase',

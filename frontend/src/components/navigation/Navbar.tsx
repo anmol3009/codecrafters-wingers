@@ -28,9 +28,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [location.pathname])
+  useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,24 +41,21 @@ export default function Navbar() {
   return (
     <>
       <motion.header
-        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/95 backdrop-blur-xl border-b border-ink/8 shadow-sm py-3'
-            : 'bg-white/80 backdrop-blur-md py-5'
-        }`}
+        className="fixed top-0 left-0 right-0 z-30 bg-white border-b-2 border-[#111]"
+        style={{ boxShadow: scrolled ? '0 4px 0px #111' : 'none' }}
         initial={{ y: -80 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
-              <span className="font-display text-white font-bold text-lg">CQ</span>
+            <div className="w-10 h-10 bg-[#FFCBA4] border-2 border-[#111] flex items-center justify-center" style={{ boxShadow: '2px 2px 0 #111' }}>
+              <span className="font-display text-[#111] font-bold text-lg">CQ</span>
             </div>
             <div className="hidden sm:block">
-              <p className="font-display text-ink font-semibold text-lg leading-tight">ConceptIQ</p>
-              <p className="text-gold/70 text-xs font-body leading-tight">AI Root Learning</p>
+              <p className="font-display text-[#111] font-bold text-lg leading-tight tracking-tight">ConceptIQ</p>
+              <p className="text-[#666] text-xs font-body leading-tight">AI Root Learning</p>
             </div>
           </Link>
 
@@ -70,10 +65,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`px-4 py-2 rounded-lg font-body text-sm transition-all duration-200 ${
+                className={`px-4 py-2 font-body text-sm font-semibold transition-all duration-100 border-2 ${
                   location.pathname === link.href
-                    ? 'text-gold bg-gold/10'
-                    : 'text-ink-soft hover:text-ink hover:bg-ink/5'
+                    ? 'bg-[#FFCBA4] text-[#111] border-[#111]'
+                    : 'text-[#333] border-transparent hover:border-[#111] hover:bg-[#FFFAF6]'
                 }`}
               >
                 {link.label}
@@ -81,36 +76,28 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Right actions */}
+          {/* Right */}
           <div className="flex items-center gap-3">
-            {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="text-ink-soft hover:text-ink transition-colors p-2"
+              className="p-2 border-2 border-transparent hover:border-[#111] hover:bg-[#FFFAF6] transition-all"
             >
               <SearchIcon />
             </button>
 
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center">
-                    <span className="text-gold font-body font-semibold text-xs">
-                      {userName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                <div className="w-8 h-8 bg-[#FFCBA4] border-2 border-[#111] flex items-center justify-center" style={{ boxShadow: '2px 2px 0 #111' }}>
+                  <span className="text-[#111] font-bold text-xs">{userName.charAt(0).toUpperCase()}</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={logout}>Sign out</Button>
               </div>
             ) : (
-              <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)}>
-                Sign in
-              </Button>
+              <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button>
             )}
 
-            {/* Mobile menu */}
             <button
-              className="md:hidden text-ink-soft hover:text-ink transition-colors p-2"
+              className="md:hidden p-2 border-2 border-transparent hover:border-[#111]"
               onClick={() => setMobileOpen(v => !v)}
             >
               {mobileOpen ? <XIcon /> : <MenuIcon />}
@@ -125,14 +112,14 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white/98 backdrop-blur-xl border-t border-ink/8 shadow-md"
+              className="md:hidden bg-white border-t-2 border-[#111]"
             >
               <div className="px-6 py-4 flex flex-col gap-1">
                 {navLinks.map(link => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="px-4 py-3 rounded-lg font-body text-sm text-ink-soft hover:text-ink hover:bg-ink/5 transition-all"
+                    className="px-4 py-3 font-body text-sm font-semibold text-[#333] hover:bg-[#FFCBA4] hover:text-[#111] transition-all border-b border-[#eee] last:border-0"
                   >
                     {link.label}
                   </Link>
@@ -148,25 +135,21 @@ export default function Navbar() {
         {searchOpen && (
           <>
             <motion.div
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-40"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSearchOpen(false)}
             />
             <motion.div
               className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             >
-              <form onSubmit={handleSearch} className="glass-navy rounded-2xl p-4 flex gap-3">
+              <form onSubmit={handleSearch} className="bg-white border-2 border-[#111] p-4 flex gap-3" style={{ boxShadow: '6px 6px 0 #111' }}>
                 <input
                   autoFocus
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="What do you want to learn?"
-                  className="flex-1 bg-transparent text-ink font-body placeholder:text-ink-muted outline-none text-base"
+                  className="flex-1 bg-transparent text-[#111] font-body placeholder:text-[#999] outline-none text-base"
                 />
                 <Button type="submit" variant="primary" size="sm">Search</Button>
               </form>
@@ -181,23 +164,11 @@ export default function Navbar() {
 }
 
 function SearchIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-  )
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 }
 function MenuIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  )
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
 }
 function XIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  )
+  return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
 }
