@@ -9,7 +9,7 @@ const FEATURES = [
     icon: '🧠',
     title: 'Root Cause Detection',
     description:
-      'When you get a question wrong, ConceptIQ traces back through the concept graph to find the exact prerequisite you\'re missing — not just the topic, but why.',
+      'When you get a question wrong, SARASWATI traces back through the concept graph to find the exact prerequisite you\'re missing — not just the topic, but why.',
     highlight: true,
   },
   {
@@ -23,7 +23,7 @@ const FEATURES = [
     icon: '🔄',
     title: 'Smart Retry System',
     description:
-      'Instead of just "try again", ConceptIQ shows your weak node, redirects you to the prerequisite, and gives you a fresh question variant after revision.',
+      'Instead of just "try again", SARASWATI shows your weak node, redirects you to the prerequisite, and gives you a fresh question variant after revision.',
     highlight: false,
   },
   {
@@ -81,7 +81,7 @@ export default function FeaturesSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <p className="font-body text-gold text-sm tracking-widest uppercase mb-4">
-            Why ConceptIQ wins
+            Why SARASWATI wins
           </p>
           <h2
             className="font-display text-ink"

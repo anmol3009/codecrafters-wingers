@@ -34,7 +34,7 @@ function CTASection() {
           Join students who understand <em className="not-italic italic">why</em>, not just what
         </h2>
         <p className="font-body text-[#333] mb-10 leading-relaxed text-lg">
-          ConceptIQ gives you the diagnostic layer that most learning platforms skip.
+          SARASWATI gives you the diagnostic layer that most learning platforms skip.
           Start with any course — your concept graph builds as you go.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
@@ -65,11 +65,9 @@ function Footer() {
     <footer className="border-t-2 border-[#111] bg-[#111] py-12 px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#FFCBA4] border-2 border-[#FFCBA4] flex items-center justify-center">
-            <span className="font-display text-[#111] font-bold text-base">CQ</span>
-          </div>
+          <img src="/image.png" alt="Saraswati Logo" className="w-9 h-9 object-contain" />
           <div>
-            <p className="font-display text-white font-bold">ConceptIQ</p>
+            <p className="font-display text-black font-bold tracking-tight">SARASWATI</p>
             <p className="font-body text-[#999] text-xs">AI Root Learning System</p>
           </div>
         </div>
@@ -85,7 +83,7 @@ function Footer() {
             </Link>
           ))}
         </div>
-        <p className="font-body text-[#666] text-xs">© 2025 ConceptIQ. Built for learning.</p>
+        <p className="font-body text-[#666] text-xs">© 2025 SARASWATI. Built for learning.</p>
       </div>
     </footer>
   )

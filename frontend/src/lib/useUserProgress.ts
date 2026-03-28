@@ -115,7 +115,7 @@ export const useUserProgress = create<UserProgressState>()(
       },
     }),
     {
-      name: 'conceptiq-progress',
+      name: 'saraswati-progress',
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
         userName: state.userName,
