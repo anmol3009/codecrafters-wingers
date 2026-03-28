@@ -1,6 +1,7 @@
 const { getCourseRaw, getAllCourses } = require('../services/courseService');
 const { recordMCQResult, resetProgressFromSection, getCourseProgress, getEnrolledCourses } = require('../services/progressService');
 const { traceRootCause, findSectionForConcept } = require('../services/conceptService');
+const { diagnoseError } = require('../services/diagnosisService');
 const { db } = require('../config/firebase');
 
 /**
@@ -86,7 +87,29 @@ async function submitMCQ(req, res, next) {
     }
 
     // ── INCORRECT ─────────────────────────────────────────────────────────────
-    const { rootCause, path } = traceRootCause(conceptTag);
+    let { rootCause, path } = traceRootCause(conceptTag);
+    let aiExplanation = null;
+
+    // Call LLM for real-time root cause analysis (Haiku is fast & smart enough here)
+    try {
+      const aiResult = await diagnoseError({
+        question,
+        correctAnswer: question.correctAnswer,
+        selectedAnswer,
+        approachText: req.body.explanationText || '',
+        conceptTag
+      });
+
+      if (aiResult && aiResult.rootCause) {
+        rootCause = aiResult.rootCause;
+        aiExplanation = aiResult.explanation;
+        if (aiResult.suggestedRevisePath) {
+          path = aiResult.suggestedRevisePath;
+        }
+      }
+    } catch (aiErr) {
+      console.warn('[AI Diagnosis] Skipped – using static tracing:', aiErr.message);
+    }
 
     // Find the earliest section in this course that covers the root concept
     const allSectionIds = course.syllabus.map((s) => s.id);
@@ -139,12 +162,14 @@ async function submitMCQ(req, res, next) {
       success: false,
       correct: false,
       correctIndex: question.correctAnswer,
-      explanation: question.explanation,
+      explanation: aiExplanation || question.explanation,
       conceptTag,
       rootCause,
       path,
       restartFromSectionId,
-      message: `You need to restart from "${rootCause}". Your progress has been reset to that section.`,
+      message: aiExplanation 
+        ? `We've diagnosed a gap in your "${rootCause}" knowledge. ${aiExplanation}`
+        : `You need to restart from "${rootCause}". Your progress has been reset to that section.`,
     });
   } catch (err) {
     next(err);

@@ -256,7 +256,48 @@ export default function TeacherInsights() {
               </div>
             )}
 
-            {/* ─── Wrong Answers by Topic ──────────────────────────────────── */}
+            {/* ─── Top Misunderstood Topics Chart ─────────────────────────── */}
+            {topicCounts.length > 0 && (
+              <div className="bg-white border-2 border-[#111] p-8 mb-8" style={{ boxShadow: '12px 12px 0 #111' }}>
+                <h3 className="font-display text-[#111] text-3xl mb-2 font-bold flex items-center gap-3">
+                  <span className="text-gold">📈</span> Top Misunderstood Topics
+                </h3>
+                <p className="font-body text-[#666] text-sm mb-8 uppercase tracking-widest font-bold">Aggregate mistake frequency across all student attempts</p>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topicCounts.slice(0, 8)} margin={{ top: 10, right: 30, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                      <XAxis 
+                        dataKey="topicName" 
+                        angle={-45} 
+                        textAnchor="end" 
+                        height={80} 
+                        interval={0}
+                        tick={{ fill: '#111', fontSize: 11, fontWeight: 'bold' }}
+                      />
+                      <YAxis tick={{ fill: '#666', fontSize: 12 }} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#111', 
+                          border: 'none', 
+                          borderRadius: '8px',
+                          color: '#fff' 
+                        }} 
+                      />
+                      <Bar 
+                        dataKey="totalWrongAnswers" 
+                        fill="#FFCBA4" 
+                        stroke="#111" 
+                        strokeWidth={2}
+                        label={{ position: 'top', fill: '#111', fontSize: 12, fontWeight: 'bold' }}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Wrong Answers by Topic Table ───────────────────────────── */}
             <div className="bg-white border-2 border-[#111] p-8 mb-8" style={{ boxShadow: '8px 8px 0 #111' }}>
               <h3 className="font-display text-[#111] text-2xl mb-2 font-bold flex items-center gap-3">
                 <span className="text-red-500">📊</span> Wrong Answers by Topic
