@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useUserProgress } from './lib/useUserProgress'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const Courses = lazy(() => import('./pages/Courses'))
@@ -60,6 +61,12 @@ function MainSite() {
 
 export default function App() {
   const [introComplete, setIntroComplete] = useState(false)
+  const validateSession = useUserProgress(s => s.validateSession)
+
+  // On app startup, check if the persisted auth token is still valid
+  useEffect(() => {
+    validateSession()
+  }, [validateSession])
 
   return (
     <AnimatePresence mode="wait">

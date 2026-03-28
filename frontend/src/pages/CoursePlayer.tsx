@@ -5,25 +5,44 @@ import { Button } from '../components/ui/Button'
 import { DifficultyBadge } from '../components/ui/Badge'
 import MCQEngine from '../components/player/MCQEngine'
 import { useUserProgress } from '../lib/useUserProgress'
-import coursesData from '../data/courses.json'
+import { api } from '../lib/api'
 
-type Course = (typeof coursesData)[0]
+interface Course {
+  id: string
+  title: string
+  subject: string
+  difficulty: string
+  syllabus: any[]
+}
 
 export default function CoursePlayer() {
   const { id } = useParams<{ id: string }>()
-  const course = (coursesData.find(c => c.id === id) ?? null) as Course | null
-  const { enrolledCourses, enrollCourse, completedSections, completeSection, setCurrentSection } = useUserProgress()
+  const { enrolledCourses, enrollCourse, completedSections, completeSection, setCurrentSection, authToken } = useUserProgress()
 
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [activeSectionIndex, setActiveSectionIndex] = useState(0)
   const [showMCQ, setShowMCQ] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
   const [videoComplete, setVideoComplete] = useState(false)
 
   useEffect(() => {
-    if (course && !enrolledCourses.includes(c.id)) {
-      enrollCourse(c.id)
-    }
-  }, [course, enrolledCourses, enrollCourse])
+    if (!id) return
+    setLoading(true)
+    api.courses.get(id)
+      .then(res => {
+        setCourse(res.course)
+        if (res.course && !enrolledCourses.includes(res.course.id)) {
+          enrollCourse(res.course.id)
+        }
+      })
+      .catch(err => {
+        console.error(err)
+        setError(true)
+      })
+      .finally(() => setLoading(false))
+  }, [id, enrolledCourses, enrollCourse])
 
   useEffect(() => {
     setVideoProgress(0)
@@ -31,23 +50,37 @@ export default function CoursePlayer() {
     setShowMCQ(false)
 
     // Simulate video watching progress
-    // For demo purposes, we speed it up (1% every 200ms)
     const interval = setInterval(() => {
       setVideoProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval)
           setVideoComplete(true)
+          // Notify backend that video was watched
+          if (authToken && course) {
+            const sectionId = course.syllabus[activeSectionIndex]?.id
+            if (sectionId) {
+              api.progress.videoComplete(course.id, sectionId, authToken).catch(console.warn)
+            }
+          }
           setTimeout(() => setShowMCQ(true), 1000)
           return 100
         }
         return prev + 1
       })
-    }, 150) // About 15s to finish the video in demo
+    }, 150)
 
     return () => clearInterval(interval)
   }, [activeSectionIndex])
 
-  if (course === null) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center pt-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
+    )
+  }
+
+  if (error || !course) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center pt-20">
         <div className="text-center">
@@ -79,11 +112,20 @@ export default function CoursePlayer() {
   function handleMCQComplete() {
     completeSection(c.id, activeSection.id)
     setShowMCQ(false)
-    // Auto-advance to next section if exists
     if (activeSectionIndex < c.syllabus.length - 1) {
       setTimeout(() => {
         setActiveSectionIndex(activeSectionIndex + 1)
       }, 800)
+    }
+  }
+
+  function handleRestartFromSection(sectionId: string) {
+    const idx = c.syllabus.findIndex(s => s.id === sectionId)
+    if (idx !== -1) {
+      setActiveSectionIndex(idx)
+      setShowMCQ(false)
+      setVideoComplete(false)
+      setVideoProgress(0)
     }
   }
 
@@ -175,8 +217,9 @@ export default function CoursePlayer() {
                   transition={{ duration: 0.4 }}
                 >
                   <MCQEngine
-                    questionIds={activeSection.mcqIds}
+                    questions={activeSection.mcqs || []}
                     onComplete={handleMCQComplete}
+                    onRestartFromSection={handleRestartFromSection}
                     sectionTitle={activeSection.title}
                     courseId={c.id}
                     sectionId={activeSection.id}
