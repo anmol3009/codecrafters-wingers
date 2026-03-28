@@ -51,7 +51,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [approach, setApproach] = useState('')
   const [backendResult, setBackendResult] = useState<McqSubmitResponse | null>(null)
-  const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection, resetProgressFromSection } = useUserProgress()
+  const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection } = useUserProgress()
 
   const loadNewQuestion = useCallback(() => {
     const next = pickQuestion(questions, usedIds)

@@ -9,7 +9,7 @@ import { getSuggestedRevisionPath, initConceptGraph } from '../lib/conceptEngine
 import { api } from '../lib/api'
 
 export default function MyCourses() {
-  const { enrolledCourses, completedSections, weakConcepts, confidenceScores, authToken } = useUserProgress()
+  const { completedSections, weakConcepts, confidenceScores, authToken } = useUserProgress()
   const [enrolled, setEnrolled] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [revisionPath, setRevisionPath] = useState<string[]>([])

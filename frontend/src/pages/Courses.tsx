@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { DifficultyBadge, Badge } from '../components/ui/Badge'
+import { DifficultyBadge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { useUserProgress } from '../lib/useUserProgress'
 import AuthModal from '../components/ui/AuthModal'
