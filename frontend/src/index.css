@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    background: #FFFFFF;
+    color: #222222;
+    font-family: Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    margin: 0;
+    color: #222222;
+  }
+
+  p { margin: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  a { color: inherit; }
+  * { box-sizing: border-box; }
+}
+
+@layer components {
+  .gold-border {
+    @apply border border-gold/40;
+  }
+
+  /* Light glass card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(250, 129, 18, 0.15);
+    border-radius: 1rem;
+  }
+
+  /* Cream card */
+  .glass-navy {
+    background: rgba(250, 243, 225, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(250, 129, 18, 0.2);
+    border-radius: 1rem;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #FA8112 0%, #FFB347 50%, #D4690A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-padding {
+    @apply px-6 md:px-12 lg:px-20 py-20;
+  }
+}
+
+@layer utilities {
+  .preserve-3d { transform-style: preserve-3d; }
+  .perspective-1200 { perspective: 1200px; }
+  .backface-hidden { backface-visibility: hidden; }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #FAF3E1; }
+::-webkit-scrollbar-thumb { background: #FA811266; border-radius: 2px; }
+::selection { background: rgba(250, 129, 18, 0.2); color: #222222; }

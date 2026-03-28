@@ -1,0 +1,292 @@
+[
+  {
+    "id": "algebra-foundations",
+    "title": "Algebra Foundations",
+    "subject": "Mathematics",
+    "difficulty": "Beginner",
+    "duration": "6 weeks",
+    "price": "$49",
+    "validity": "12 months",
+    "mockIncluded": true,
+    "coverGradient": "from-blue-900 via-navy to-navy-dark",
+    "coverAccent": "#3b82f6",
+    "prerequisites": ["Arithmetic"],
+    "outcomes": ["Variables & Expressions", "Linear Equations", "Inequalities"],
+    "description": "Build confident algebra habits and symbolic thinking from the ground up.",
+    "rating": 4.8,
+    "students": 2840,
+    "syllabus": [
+      {
+        "id": "alg-01",
+        "title": "Introduction to Variables",
+        "videoId": "NybHckSEQBI",
+        "duration": "12:30",
+        "mcqIds": ["alg-q1a", "alg-q1b", "alg-q1c"],
+        "locked": false
+      },
+      {
+        "id": "alg-02",
+        "title": "Solving One-Step Equations",
+        "videoId": "l3XzepN03KQ",
+        "duration": "15:45",
+        "mcqIds": ["alg-q2a", "alg-q2b", "alg-q2c"],
+        "locked": true
+      },
+      {
+        "id": "alg-03",
+        "title": "Two-Step Equations",
+        "videoId": "9IUEk9fn2Vs",
+        "duration": "18:20",
+        "mcqIds": ["alg-q3a", "alg-q3b", "alg-q3c"],
+        "locked": true
+      },
+      {
+        "id": "alg-04",
+        "title": "Inequalities and Number Lines",
+        "videoId": "HL3fhRDmJAY",
+        "duration": "14:10",
+        "mcqIds": ["alg-q4a", "alg-q4b", "alg-q4c"],
+        "locked": true
+      },
+      {
+        "id": "alg-05",
+        "title": "Final Assessment",
+        "videoId": "NybHckSEQBI",
+        "duration": "20:00",
+        "mcqIds": ["alg-q5a", "alg-q5b", "alg-q5c"],
+        "locked": true
+      }
+    ]
+  },
+  {
+    "id": "linear-equations-mastery",
+    "title": "Linear Equations Mastery",
+    "subject": "Mathematics",
+    "difficulty": "Intermediate",
+    "duration": "8 weeks",
+    "price": "$69",
+    "validity": "12 months",
+    "mockIncluded": true,
+    "coverGradient": "from-indigo-900 via-navy to-navy-dark",
+    "coverAccent": "#6366f1",
+    "prerequisites": ["Algebra Basics"],
+    "outcomes": ["Graphing", "Systems of Equations", "Word Problems"],
+    "description": "Solve and model linear problems with confidence and precision.",
+    "rating": 4.9,
+    "students": 3210,
+    "syllabus": [
+      {
+        "id": "lin-01",
+        "title": "Slope and Intercepts",
+        "videoId": "l3XzepN03KQ",
+        "duration": "16:20",
+        "mcqIds": ["lin-q1a", "lin-q1b", "lin-q1c"],
+        "locked": false
+      },
+      {
+        "id": "lin-02",
+        "title": "Graphing Linear Equations",
+        "videoId": "NybHckSEQBI",
+        "duration": "19:45",
+        "mcqIds": ["lin-q2a", "lin-q2b", "lin-q2c"],
+        "locked": true
+      },
+      {
+        "id": "lin-03",
+        "title": "Systems of Equations",
+        "videoId": "9IUEk9fn2Vs",
+        "duration": "22:10",
+        "mcqIds": ["lin-q3a", "lin-q3b", "lin-q3c"],
+        "locked": true
+      },
+      {
+        "id": "lin-04",
+        "title": "Word Problem Patterns",
+        "videoId": "HL3fhRDmJAY",
+        "duration": "25:30",
+        "mcqIds": ["lin-q4a", "lin-q4b", "lin-q4c"],
+        "locked": true
+      }
+    ]
+  },
+  {
+    "id": "quadratic-concepts",
+    "title": "Quadratic Concepts",
+    "subject": "Mathematics",
+    "difficulty": "Intermediate",
+    "duration": "7 weeks",
+    "price": "$79",
+    "validity": "6 months",
+    "mockIncluded": false,
+    "coverGradient": "from-purple-900 via-navy to-navy-dark",
+    "coverAccent": "#a855f7",
+    "prerequisites": ["Linear Equations", "Algebra Basics"],
+    "outcomes": ["Factoring", "Vertex Form", "Finding Roots"],
+    "description": "From parabolas to real-world modeling — master quadratics completely.",
+    "rating": 4.7,
+    "students": 1890,
+    "syllabus": [
+      {
+        "id": "quad-01",
+        "title": "Introduction to Parabolas",
+        "videoId": "NybHckSEQBI",
+        "duration": "14:20",
+        "mcqIds": ["quad-q1a", "quad-q1b", "quad-q1c"],
+        "locked": false
+      },
+      {
+        "id": "quad-02",
+        "title": "Factoring Quadratics",
+        "videoId": "l3XzepN03KQ",
+        "duration": "21:15",
+        "mcqIds": ["quad-q2a", "quad-q2b", "quad-q2c"],
+        "locked": true
+      },
+      {
+        "id": "quad-03",
+        "title": "Quadratic Formula",
+        "videoId": "9IUEk9fn2Vs",
+        "duration": "18:40",
+        "mcqIds": ["quad-q3a", "quad-q3b", "quad-q3c"],
+        "locked": true
+      }
+    ]
+  },
+  {
+    "id": "physics-fundamentals",
+    "title": "Physics Fundamentals",
+    "subject": "Physics",
+    "difficulty": "Beginner",
+    "duration": "8 weeks",
+    "price": "$59",
+    "validity": "12 months",
+    "mockIncluded": true,
+    "coverGradient": "from-cyan-900 via-navy to-navy-dark",
+    "coverAccent": "#06b6d4",
+    "prerequisites": ["Algebra Basics"],
+    "outcomes": ["Newton's Laws", "Kinematics", "Energy Conservation"],
+    "description": "Build physical intuition with rigorous mathematical foundations.",
+    "rating": 4.8,
+    "students": 2150,
+    "syllabus": [
+      {
+        "id": "phy-01",
+        "title": "Motion and Velocity",
+        "videoId": "ZM8ECpBuQYE",
+        "duration": "17:30",
+        "mcqIds": ["phy-q1a", "phy-q1b", "phy-q1c"],
+        "locked": false
+      },
+      {
+        "id": "phy-02",
+        "title": "Newton's Three Laws",
+        "videoId": "NybHckSEQBI",
+        "duration": "20:15",
+        "mcqIds": ["phy-q2a", "phy-q2b", "phy-q2c"],
+        "locked": true
+      },
+      {
+        "id": "phy-03",
+        "title": "Work, Energy & Power",
+        "videoId": "l3XzepN03KQ",
+        "duration": "22:45",
+        "mcqIds": ["phy-q3a", "phy-q3b", "phy-q3c"],
+        "locked": true
+      }
+    ]
+  },
+  {
+    "id": "chemistry-essentials",
+    "title": "Chemistry Essentials",
+    "subject": "Chemistry",
+    "difficulty": "Beginner",
+    "duration": "9 weeks",
+    "price": "$64",
+    "validity": "12 months",
+    "mockIncluded": true,
+    "coverGradient": "from-emerald-900 via-navy to-navy-dark",
+    "coverAccent": "#10b981",
+    "prerequisites": ["Arithmetic"],
+    "outcomes": ["Atomic Theory", "Chemical Bonding", "Stoichiometry"],
+    "description": "Understand matter at the molecular level with clear, structured lessons.",
+    "rating": 4.6,
+    "students": 1650,
+    "syllabus": [
+      {
+        "id": "chem-01",
+        "title": "Atomic Structure",
+        "videoId": "9IUEk9fn2Vs",
+        "duration": "16:10",
+        "mcqIds": ["chem-q1a", "chem-q1b", "chem-q1c"],
+        "locked": false
+      },
+      {
+        "id": "chem-02",
+        "title": "Periodic Table Patterns",
+        "videoId": "HL3fhRDmJAY",
+        "duration": "18:30",
+        "mcqIds": ["chem-q2a", "chem-q2b", "chem-q2c"],
+        "locked": true
+      },
+      {
+        "id": "chem-03",
+        "title": "Chemical Bonding",
+        "videoId": "NybHckSEQBI",
+        "duration": "21:20",
+        "mcqIds": ["chem-q3a", "chem-q3b", "chem-q3c"],
+        "locked": true
+      }
+    ]
+  },
+  {
+    "id": "ai-machine-learning",
+    "title": "AI & Machine Learning",
+    "subject": "Computer Science",
+    "difficulty": "Intermediate",
+    "duration": "10 weeks",
+    "price": "$99",
+    "validity": "18 months",
+    "mockIncluded": true,
+    "coverGradient": "from-rose-900 via-navy to-navy-dark",
+    "coverAccent": "#f43f5e",
+    "prerequisites": ["Statistics", "Linear Equations"],
+    "outcomes": ["Supervised Learning", "Neural Networks", "Model Evaluation"],
+    "description": "Build real ML models from scratch with solid mathematical grounding.",
+    "rating": 4.9,
+    "students": 4120,
+    "syllabus": [
+      {
+        "id": "ml-01",
+        "title": "What is Machine Learning?",
+        "videoId": "ukzFI9rgwfU",
+        "duration": "18:20",
+        "mcqIds": ["ml-q1a", "ml-q1b", "ml-q1c"],
+        "locked": false
+      },
+      {
+        "id": "ml-02",
+        "title": "Linear Regression",
+        "videoId": "l3XzepN03KQ",
+        "duration": "25:10",
+        "mcqIds": ["ml-q2a", "ml-q2b", "ml-q2c"],
+        "locked": true
+      },
+      {
+        "id": "ml-03",
+        "title": "Classification & Decision Trees",
+        "videoId": "9IUEk9fn2Vs",
+        "duration": "22:45",
+        "mcqIds": ["ml-q3a", "ml-q3b", "ml-q3c"],
+        "locked": true
+      },
+      {
+        "id": "ml-04",
+        "title": "Neural Networks Basics",
+        "videoId": "NybHckSEQBI",
+        "duration": "28:30",
+        "mcqIds": ["ml-q4a", "ml-q4b", "ml-q4c"],
+        "locked": true
+      }
+    ]
+  }
+]
