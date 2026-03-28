@@ -29,8 +29,13 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (curl, Postman), localhost, or any Codespaces domain
-      if (!origin || origin.includes('localhost') || origin.includes('.app.github.dev')) {
+      // Allow requests with no origin (curl, Postman), localhost, any Codespaces domain, or production Vercel frontend
+      if (
+        !origin || 
+        origin.includes('localhost') || 
+        origin.includes('.app.github.dev') || 
+        origin === process.env.CLIENT_URL
+      ) {
         callback(null, true)
       } else {
         callback(new Error('Not allowed by CORS'))
