@@ -10,6 +10,7 @@ const TeacherInsights = lazy(() => import('./pages/TeacherInsights'))
 const MockTest = lazy(() => import('./pages/MockTest'))
 const Scorecard = lazy(() => import('./pages/Scorecard'))
 const IntroExperience = lazy(() => import('./components/intro/IntroExperience'))
+const CareerRoadmap = lazy(() => import('./pages/CareerRoadmap'))  // ✅ NEW
 import Navbar from './components/navigation/Navbar'
 
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,8 @@ function MainSite() {
             <Route path="/teacher-insights" element={<PageTransition><TeacherInsights /></PageTransition>} />
             <Route path="/mock-test" element={<PageTransition><MockTest /></PageTransition>} />
             <Route path="/scorecard" element={<PageTransition><Scorecard /></PageTransition>} />
+            {/* ✅ NEW route */}
+            <Route path="/career-roadmap" element={<PageTransition><CareerRoadmap /></PageTransition>} />
           </Routes>
         </AnimatePresence>
       </Suspense>
@@ -65,17 +68,10 @@ export default function App() {
     <AnimatePresence mode="wait">
       {!introComplete ? (
         <Suspense fallback={<LoadingScreen />} key="intro">
-          <IntroExperience onComplete={() => {
-            setIntroComplete(true)
-          }} />
+          <IntroExperience onComplete={() => setIntroComplete(true)} />
         </Suspense>
       ) : (
-        <motion.div
-          key="main"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
+        <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
           <MainSite />
         </motion.div>
       )}

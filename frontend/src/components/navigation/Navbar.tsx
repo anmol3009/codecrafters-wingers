@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/Button'
@@ -12,12 +12,25 @@ const navLinks = [
   { label: 'My Courses', href: '/my-courses' },
 ]
 
+const careers = [
+  { label: 'AI Engineer', emoji: '🤖', color: '#FF6B6B' },
+  { label: 'Software Engineer', emoji: '💻', color: '#4ECDC4' },
+  { label: 'Data Scientist', emoji: '📊', color: '#45B7D1' },
+  { label: 'Businessman', emoji: '💼', color: '#96CEB4' },
+  { label: 'Teacher', emoji: '🎓', color: '#FFEAA7' },
+  { label: 'Doctor', emoji: '🩺', color: '#DDA0DD' },
+  { label: 'Game Developer', emoji: '🎮', color: '#98D8C8' },
+  { label: 'Designer', emoji: '🎨', color: '#F7DC6F' },
+]
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [careerOpen, setCareerOpen] = useState(false)
+  const careerRef = useRef<HTMLDivElement>(null)
   const { isLoggedIn, userName, logout } = useUserProgress()
   const location = useLocation()
   const navigate = useNavigate()
@@ -30,12 +43,28 @@ export default function Navbar() {
 
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (careerRef.current && !careerRef.current.contains(e.target as Node)) {
+        setCareerOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       navigate(`/courses?q=${encodeURIComponent(searchQuery)}`)
       setSearchOpen(false)
     }
+  }
+
+  const handleCareerClick = (career: string) => {
+    setCareerOpen(false)
+    navigate(`/career-roadmap?career=${encodeURIComponent(career)}`)
   }
 
   return (
@@ -72,6 +101,61 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* ✅ NEW: "I want to become" dropdown */}
+            <div ref={careerRef} className="relative">
+              <button
+                onClick={() => setCareerOpen(v => !v)}
+                className={`flex items-center gap-1.5 px-4 py-2 font-body text-sm font-semibold transition-all duration-100 border-2 ${
+                  careerOpen
+                    ? 'bg-[#111] text-white border-[#111]'
+                    : 'text-[#333] border-[#111] hover:bg-[#FFCBA4]'
+                }`}
+                style={{ boxShadow: careerOpen ? 'none' : '2px 2px 0 #111' }}
+              >
+                <span>🚀</span>
+                <span>I want to become</span>
+                <motion.span
+                  animate={{ rotate: careerOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs"
+                >
+                  ▼
+                </motion.span>
+              </button>
+
+              <AnimatePresence>
+                {careerOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-56 bg-white border-2 border-[#111] z-50"
+                    style={{ boxShadow: '4px 4px 0 #111' }}
+                  >
+                    {careers.map((career, i) => (
+                      <motion.button
+                        key={career.label}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        onClick={() => handleCareerClick(career.label)}
+                        className="w-full text-left px-4 py-3 flex items-center gap-3 font-body text-sm font-semibold text-[#111] hover:bg-[#FFFAF6] border-b border-[#eee] last:border-0 transition-colors group"
+                      >
+                        <span
+                          className="w-8 h-8 flex items-center justify-center text-base border-2 border-[#111] group-hover:scale-110 transition-transform"
+                          style={{ backgroundColor: career.color + '40' }}
+                        >
+                          {career.emoji}
+                        </span>
+                        {career.label}
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
 
           {/* Right */}
@@ -122,6 +206,18 @@ export default function Navbar() {
                     {link.label}
                   </Link>
                 ))}
+                <div className="border-t border-[#eee] pt-2 mt-1">
+                  <p className="px-4 py-2 text-xs text-[#999] font-body uppercase tracking-wider">I want to become →</p>
+                  {careers.map(career => (
+                    <button
+                      key={career.label}
+                      onClick={() => handleCareerClick(career.label)}
+                      className="w-full text-left px-4 py-2.5 font-body text-sm font-semibold text-[#333] hover:bg-[#FFCBA4] transition-all flex items-center gap-2"
+                    >
+                      <span>{career.emoji}</span> {career.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
