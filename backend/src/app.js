@@ -28,7 +28,14 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman), localhost, or any Codespaces domain
+      if (!origin || origin.includes('localhost') || origin.includes('.app.github.dev')) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     credentials: true,
   })
 );
@@ -56,6 +63,7 @@ app.use('/mcq', mcqRoutes);
 app.use('/teacher-insights', insightsRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/concepts', conceptRoutes);
+app.use('/chat', require('./routes/chatRoutes'));
 
 /* ─────────────────────────────────────────
    404 catch-all

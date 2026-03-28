@@ -12,6 +12,7 @@ const MockTest = lazy(() => import('./pages/MockTest'))
 const Scorecard = lazy(() => import('./pages/Scorecard'))
 const IntroExperience = lazy(() => import('./components/intro/IntroExperience'))
 import Navbar from './components/navigation/Navbar'
+import ChatBot from './components/ui/ChatBot'
 
 function PageTransition({ children }: { children: React.ReactNode }) {
   return (
@@ -42,6 +43,7 @@ function MainSite() {
   return (
     <>
       <Navbar />
+      <ChatBot />
       <Suspense fallback={<LoadingScreen />}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
