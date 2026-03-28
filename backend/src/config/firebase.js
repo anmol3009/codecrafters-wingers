@@ -9,26 +9,33 @@ function initFirebase() {
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // .env stores \n as literal "\\n" — replace so the key parses correctly
   const privateKey = process.env.FIREBASE_PRIVATE_KEY
     ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
     : undefined;
 
   if (!projectId || !clientEmail || !privateKey) {
     console.warn(
-      '[Firebase] Missing credentials – running without Firebase Admin. ' +
-        'Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in .env'
+      '[Firebase] ⚠️ Missing credentials. Backend will run in LIMITED MODE. ' +
+        'Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in .env to enable full Auth/Firestore.'
     );
-    // Initialise with just project ID so Firestore emulator can be used locally
-    admin.initializeApp({ projectId: projectId || 'saraswati-dev' });
+    
+    // Initialise with dummy params so that admin.firestore() and admin.auth() 
+    // don't immediately crash the application on inclusion.
+    admin.initializeApp({
+      projectId: projectId || 'saraswati-dev-mock',
+    });
     return;
   }
 
-  admin.initializeApp({
-    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
-  });
-
-  console.log('[Firebase] Admin SDK initialised successfully');
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+    });
+    console.log('[Firebase] Admin SDK initialised successfully');
+  } catch (error) {
+    console.error('[Firebase] ❌ Failed to initialise Admin SDK:', error.message);
+    admin.initializeApp({ projectId: projectId || 'saraswati-dev-mock' });
+  }
 }
 
 initFirebase();
