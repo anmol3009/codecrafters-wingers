@@ -1,22 +1,47 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { CircularProgress } from '../components/ui/CircularProgress'
 import { DifficultyBadge } from '../components/ui/Badge'
 import { useUserProgress } from '../lib/useUserProgress'
-import { getSuggestedRevisionPath } from '../lib/conceptEngine'
-import coursesData from '../data/courses.json'
+import { getSuggestedRevisionPath, initConceptGraph } from '../lib/conceptEngine'
+import { api } from '../lib/api'
 
 export default function MyCourses() {
-  const { enrolledCourses, completedSections, weakConcepts, confidenceScores } = useUserProgress()
+  const { enrolledCourses, completedSections, weakConcepts, confidenceScores, authToken } = useUserProgress()
+  const [enrolled, setEnrolled] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [revisionPath, setRevisionPath] = useState<string[]>([])
 
-  const enrolled = coursesData.filter(c => enrolledCourses.includes(c.id))
-  const revisionPath = weakConcepts.length > 0 ? getSuggestedRevisionPath(weakConcepts) : []
+  useEffect(() => {
+    async function loadData() {
+      if (!authToken) {
+        setLoading(false)
+        return
+      }
+      try {
+        await initConceptGraph()
+        const [coursesRes] = await Promise.all([
+          api.enrollment.myCourses(authToken)
+        ])
+        setEnrolled(coursesRes.courses)
+        
+        if (weakConcepts.length > 0) {
+          setRevisionPath(getSuggestedRevisionPath(weakConcepts))
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [authToken, weakConcepts])
 
   return (
     <div className="min-h-screen bg-white pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
         <div className="mb-12">
           <p className="font-body text-gold text-sm tracking-widest uppercase mb-3">My Learning</p>
           <h1
@@ -27,7 +52,11 @@ export default function MyCourses() {
           </h1>
         </div>
 
-        {enrolled.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-24">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+          </div>
+        ) : enrolled.length === 0 ? (
           <div className="text-center py-24">
             <div className="text-6xl mb-6">📚</div>
             <h2 className="font-display text-ink-soft text-2xl mb-4">No courses yet</h2>
@@ -43,11 +72,11 @@ export default function MyCourses() {
                 const total = course.syllabus.length
                 const progress = Math.round((completed.length / total) * 100)
                 const lastSection = completed.length > 0
-                  ? course.syllabus.find(s => s.id === completed[completed.length - 1])?.title ?? '—'
+                  ? course.syllabus.find((s: any) => s.id === completed[completed.length - 1])?.title ?? '—'
                   : 'Not started'
 
                 const courseWeakConcepts = weakConcepts.filter(w =>
-                  course.prerequisites.some(p => p.toLowerCase().includes(w.toLowerCase())) ||
+                  course.prerequisites.some((p: string) => p.toLowerCase().includes(w.toLowerCase())) ||
                   w.toLowerCase().includes(course.subject.toLowerCase().split(' ')[0])
                 )
 
