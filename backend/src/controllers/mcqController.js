@@ -89,22 +89,41 @@ async function submitMCQ(req, res, next) {
     // ── INCORRECT ─────────────────────────────────────────────────────────────
     let { rootCause, path } = traceRootCause(conceptTag);
     let aiExplanation = null;
+    let detailedExplanation = null;
+    let recommendations = [];
 
     // Call LLM for real-time root cause analysis (Haiku is fast & smart enough here)
     try {
+      const allCourses = getAllCourses().map(c => ({ id: c.id, title: c.title }));
+      
       const aiResult = await diagnoseError({
         question,
         correctAnswer: question.correctAnswer,
         selectedAnswer,
         approachText: req.body.explanationText || '',
-        conceptTag
+        conceptTag,
+        availableCourses: allCourses
       });
 
       if (aiResult && aiResult.rootCause) {
         rootCause = aiResult.rootCause;
         aiExplanation = aiResult.explanation;
+        detailedExplanation = aiResult.detailedExplanation;
+        
         if (aiResult.suggestedRevisePath) {
           path = aiResult.suggestedRevisePath;
+        }
+
+        // Map recommended IDs to full course objects with enrollment status
+        if (aiResult.recommendedCourseIds) {
+          recommendations = aiResult.recommendedCourseIds.map(rid => {
+            const c = allCourses.find(course => course.id === rid);
+            return {
+              id: rid,
+              title: c ? c.title : rid,
+              isEnrolled: enrolled.includes(rid)
+            };
+          });
         }
       }
     } catch (aiErr) {
@@ -163,12 +182,14 @@ async function submitMCQ(req, res, next) {
       correct: false,
       correctIndex: question.correctAnswer,
       explanation: aiExplanation || question.explanation,
+      detailedExplanation,
+      recommendations,
       conceptTag,
       rootCause,
       path,
       restartFromSectionId,
       message: aiExplanation 
-        ? `We've diagnosed a gap in your "${rootCause}" knowledge. ${aiExplanation}`
+        ? `We've diagnosed a gap in your "${rootCause}" knowledge.`
         : `You need to restart from "${rootCause}". Your progress has been reset to that section.`,
     });
   } catch (err) {

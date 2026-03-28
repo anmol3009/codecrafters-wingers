@@ -1,12 +1,19 @@
 import { motion } from 'framer-motion'
-import { AlertCircle, Brain, Target, ChevronDown } from 'lucide-react'
+import { AlertCircle, Brain, Target, ChevronDown, Rocket, BookOpen } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 interface DiagnosisGraphProps {
   chain: Array<{ name: string; isWeak: boolean }>
   rootCause: string
+  detailedExplanation?: string
+  recommendations?: Array<{
+    id: string
+    title: string
+    isEnrolled: boolean
+  }>
 }
 
-export default function DiagnosisGraph({ chain, rootCause }: DiagnosisGraphProps) {
+export default function DiagnosisGraph({ chain, rootCause, detailedExplanation, recommendations }: DiagnosisGraphProps) {
   return (
     <div className="py-8 px-6 bg-navy/40 border border-gold/20 rounded-2xl relative overflow-hidden backdrop-blur-xl">
       {/* Background patterns */}
@@ -111,13 +118,53 @@ export default function DiagnosisGraph({ chain, rootCause }: DiagnosisGraphProps
           })}
         </div>
 
-        {/* Footer info */}
-        <div className="mt-12 bg-white/5 border border-white/10 rounded-xl p-4">
-          <p className="font-body text-xs text-ink-muted leading-relaxed">
-            <span className="text-gold font-bold">Analysis:</span> The mistake path indicates a structural weakness starting at 
-            <span className="text-red-400 font-bold px-1.5 py-0.5 bg-red-500/10 rounded-md mx-1 border border-red-500/20">{rootCause}</span>. 
-            We recommend patching this prerequisite before continuing with {chain[chain.length-1].name}.
-          </p>
+        {/* AI Analysis & Recommendations */}
+        <div className="mt-12 space-y-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5 backdrop-blur-md">
+            <h5 className="font-display text-gold text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2">
+              <Brain className="w-3 h-3" />
+              In-Depth Analysis
+            </h5>
+            <p className="font-body text-xs text-ink-muted leading-relaxed">
+              {detailedExplanation || `The mistake path indicates a structural weakness starting at ${rootCause}. We recommend patching this prerequisite before continuing with ${chain[chain.length-1].name}.`}
+            </p>
+          </div>
+
+          {recommendations && recommendations.length > 0 && (
+            <div className="bg-gold/5 border border-gold/20 rounded-xl p-5">
+              <h5 className="font-display text-gold text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Rocket className="w-3 h-3" />
+                Recommended for your path
+              </h5>
+              <div className="space-y-3">
+                {recommendations.map((rec) => (
+                  <div key={rec.id} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-navy/80 border border-gold/10 flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-gold/60" />
+                      </div>
+                      <span className="text-sm font-medium text-ink group-hover:text-white transition-colors">
+                        {rec.title}
+                      </span>
+                    </div>
+                    
+                    {rec.isEnrolled ? (
+                      <Link 
+                        to={`/course/${rec.id}`}
+                        className="px-3 py-1 bg-gold text-navy text-[10px] font-bold rounded uppercase tracking-tighter hover:bg-white transition-colors"
+                      >
+                        Start Now
+                      </Link>
+                    ) : (
+                      <span className="text-[10px] text-ink-muted uppercase font-bold tracking-tighter px-3 py-1 border border-white/10 rounded">
+                        Available Course
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

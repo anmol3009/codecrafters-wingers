@@ -124,6 +124,12 @@ export interface McqSubmitResponse {
   correct: boolean
   correctIndex?: number
   explanation: string
+  detailedExplanation?: string
+  recommendations?: Array<{
+    id: string
+    title: string
+    isEnrolled: boolean
+  }>
   nextSectionId?: string | null
   message: string
   // only on incorrect:

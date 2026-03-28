@@ -51,7 +51,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [approach, setApproach] = useState('')
   const [backendResult, setBackendResult] = useState<McqSubmitResponse | null>(null)
-  const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection, resetProgressFromSection } = useUserProgress()
+  const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection } = useUserProgress()
 
   const loadNewQuestion = useCallback(() => {
     const next = pickQuestion(questions, usedIds)
@@ -320,13 +320,26 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
               {/* Concept chain */}
               {/* Diagnosis Graph */}
               <div className="mb-8">
-                <DiagnosisGraph chain={chainNodes} rootCause={rootCause} />
+                <DiagnosisGraph 
+                  chain={chainNodes} 
+                  rootCause={rootCause} 
+                  detailedExplanation={backendResult?.detailedExplanation}
+                  recommendations={backendResult?.recommendations}
+                />
               </div>
+
+              {backendResult?.detailedExplanation && (
+                <div className="bg-navy-dark/40 border border-gold/10 p-6 mb-8 rounded-xl">
+                  <p className="font-body text-ink text-sm leading-relaxed">
+                    <span className="text-gold font-bold uppercase text-[10px] tracking-widest block mb-2">In-Depth Analysis</span>
+                    {backendResult.detailedExplanation}
+                  </p>
+                </div>
+              )}
 
               <div className="bg-[#FFFAF6] border-2 border-[#111] p-6 mb-8" style={{ boxShadow: '6px 6px 0 #FFCBA4' }}>
                 <p className="font-body text-[#111] text-sm leading-relaxed">
-                  <span className="font-bold">Next Step:</span> We recommend pausing this section and revisiting <strong>{rootCause}</strong>. 
-                  Our analysis shows that clarifying this prerequisite will make {currentQ.concept} much easier to grasp.
+                  <span className="font-bold">Recommendation:</span> We suggest following the path below to bridge your gap in <strong>{rootCause}</strong>. 
                 </p>
               </div>
 
@@ -334,8 +347,9 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
                 <Button variant="ghost" className="flex-1" onClick={handleRestart}>
                   Retry MCQ
                 </Button>
+                {/* Dynamic Button for Root Cause */}
                 <Button variant="primary" className="flex-1" onClick={handleRestart}>
-                  Go to {rootCause}
+                  Focus on {rootCause}
                 </Button>
               </div>
             </motion.div>
