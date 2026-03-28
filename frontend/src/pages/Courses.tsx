@@ -35,7 +35,6 @@ function CourseCard({ course }: CourseCardProps) {
   function handleEnroll(e: React.MouseEvent) {
     e.preventDefault()
     if (isEnrolled) return
-    
     if (!isLoggedIn) {
       setAuthOpen(true)
       return
@@ -56,14 +55,12 @@ function CourseCard({ course }: CourseCardProps) {
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d', perspective: 800 }}
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative group"
+        className="relative group h-full"
       >
-        <Link to={`/courses/${course.id}`}>
-          <div className="bg-white border-2 border-[#111] overflow-hidden transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5">
+        <Link to={`/courses/${course.id}`} className="block h-full">
+          <div className="bg-white border-2 border-[#111] flex flex-col h-full min-h-[540px] max-w-xl mx-auto overflow-hidden transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5">
             {/* Cover */}
-            <div
-              className={`h-40 bg-gradient-to-br ${course.coverGradient} relative overflow-hidden`}
-            >
+            <div className={`h-40 bg-gradient-to-br ${course.coverGradient} relative overflow-hidden`}> 
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="font-display text-ink/10 text-8xl font-bold select-none">
                   {course.subject.charAt(0)}
@@ -83,7 +80,7 @@ function CourseCard({ course }: CourseCardProps) {
             </div>
 
             {/* Content */}
-            <div className="p-6">
+            <div className="flex flex-col flex-1 p-6">
               <h3 className="font-display text-ink text-xl font-light mb-2 group-hover:text-gold transition-colors">
                 {course.title}
               </h3>
@@ -133,13 +130,19 @@ function CourseCard({ course }: CourseCardProps) {
                 <span>👥 {course.students.toLocaleString()}</span>
               </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-ink/8">
-                <span className="font-display text-ink text-xl">{course.price}</span>
+              {/* Footer - always at the bottom */}
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-ink/8">
+                <span className="font-display text-ink text-xl">${course.price}</span>
                 <Button
                   variant={isEnrolled ? 'ghost' : 'primary'}
                   size="sm"
                   onClick={handleEnroll}
+                  className={
+                    isEnrolled
+                      ? 'border border-black bg-white text-black font-semibold shadow-[2px_2px_0_#111] hover:bg-ink/5'
+                      : 'border border-black bg-[#FFCBA4] text-black font-semibold shadow-[2px_2px_0_#111] hover:bg-[#ffb77a]'
+                  }
+                  style={{ minWidth: 140 }}
                 >
                   {isEnrolled ? 'Continue →' : 'Enroll Now'}
                 </Button>
