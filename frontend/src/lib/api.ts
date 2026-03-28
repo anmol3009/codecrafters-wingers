@@ -112,6 +112,13 @@ export const api = {
     math: (token?: string) =>
       req<{ insights: MathInsights }>('GET', '/teacher-insights/math', undefined, token),
   },
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
+
+  chat: {
+    send: (messages: { role: string; content: string }[]) =>
+      req<{ reply: string }>('POST', '/chat', { messages }),
+  },
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────── 
