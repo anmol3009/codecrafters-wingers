@@ -1,0 +1,21 @@
+{
+  "Quadratic Equations": ["Linear Equations"],
+  "Linear Equations": ["Algebra Basics"],
+  "Algebra Basics": ["Arithmetic"],
+  "Calculus": ["Quadratic Equations", "Trigonometry"],
+  "Trigonometry": ["Algebra Basics"],
+  "Functions": ["Linear Equations"],
+  "Statistics": ["Arithmetic"],
+  "Probability": ["Statistics"],
+  "Newton's Laws": ["Algebra Basics"],
+  "Kinematics": ["Newton's Laws", "Algebra Basics"],
+  "Thermodynamics": ["Algebra Basics"],
+  "Optics": ["Trigonometry"],
+  "Atomic Theory": ["Arithmetic"],
+  "Chemical Bonding": ["Atomic Theory"],
+  "Stoichiometry": ["Chemical Bonding", "Arithmetic"],
+  "Organic Chemistry": ["Chemical Bonding"],
+  "Data Structures": ["Arithmetic"],
+  "Algorithms": ["Data Structures"],
+  "Machine Learning": ["Statistics", "Linear Equations"]
+}
