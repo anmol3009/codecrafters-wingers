@@ -4,27 +4,29 @@ import { Button } from '../ui/Button'
 import DiagnosisGraph from './DiagnosisGraph'
 import { annotateChain, findRootCause } from '../../lib/conceptEngine'
 import { useUserProgress } from '../../lib/useUserProgress'
-import mcqBank from '../../data/mcq-bank.json'
+import { api, type McqSubmitResponse } from '../../lib/api'
 
 type MCQState = 'answering' | 'correct' | 'wrong' | 'approach_input' | 'analysis' | 'restarting'
 
-interface MCQQuestion {
+export interface MCQQuestion {
   id: string
   concept: string
   question: string
   options: string[]
-  correctIndex: number
+  correctIndex?: number // optional because backend might strip it
   explanation: string
   difficulty: string
   variant: number
 }
 
 interface MCQEngineProps {
-  questionIds: string[]
+  questions: MCQQuestion[]
   onComplete: () => void
   sectionTitle: string
   courseId: string
   sectionId: string
+  /** Called when backend says to restart from a given section */
+  onRestartFromSection?: (sectionId: string) => void
 }
 
 const COMMON_APPROACHES = [
@@ -35,34 +37,31 @@ const COMMON_APPROACHES = [
   "I don't recall this prerequisite concept"
 ]
 
-function getQuestions(ids: string[]): MCQQuestion[] {
-  return (mcqBank as MCQQuestion[]).filter(q => ids.includes(q.id))
-}
-
 function pickQuestion(questions: MCQQuestion[], usedIds: string[]): MCQQuestion {
   const unused = questions.filter(q => !usedIds.includes(q.id))
+  // If no unused questions exist, pick randomly from all, or default to first if empty
   const pool = unused.length > 0 ? unused : questions
-  return pool[Math.floor(Math.random() * pool.length)]
+  return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : {} as MCQQuestion
 }
 
-export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...props }: MCQEngineProps) {
-  const allQuestions = getQuestions(questionIds)
+export default function MCQEngine({ questions, onComplete, sectionTitle, onRestartFromSection, ...props }: MCQEngineProps) {
   const [usedIds, setUsedIds] = useState<string[]>([])
-  const [currentQ, setCurrentQ] = useState<MCQQuestion>(() => pickQuestion(allQuestions, []))
+  const [currentQ, setCurrentQ] = useState<MCQQuestion>(() => pickQuestion(questions, []))
   const [mcqState, setMcqState] = useState<MCQState>('answering')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [approach, setApproach] = useState('')
-  const { markWeakConcept, updateConfidence, recordMCQAttempt } = useUserProgress()
+  const [backendResult, setBackendResult] = useState<McqSubmitResponse | null>(null)
+  const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection, resetProgressFromSection } = useUserProgress()
 
   const loadNewQuestion = useCallback(() => {
-    const next = pickQuestion(allQuestions, usedIds)
+    const next = pickQuestion(questions, usedIds)
     setCurrentQ(next)
     setSelectedIndex(null)
     setApproach('')
     setMcqState('answering')
-  }, [allQuestions, usedIds])
+  }, [questions, usedIds])
 
-  function handleSelect(index: number) {
+  async function handleSelect(index: number) {
     if (mcqState !== 'answering') return
     setSelectedIndex(index)
     const isCorrect = index === currentQ.correctIndex
@@ -76,15 +75,37 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...pr
       timestamp: Date.now(),
     })
 
+    // Call backend (requires auth token; falls back gracefully if missing)
+    let result: McqSubmitResponse | null = null
+    if (authToken) {
+      try {
+        result = await api.mcq.submit({
+          courseId: props.courseId,
+          sectionId: props.sectionId,
+          questionId: currentQ.id,
+          selectedAnswer: index,
+        }, authToken)
+        setBackendResult(result)
+      } catch (e) {
+        console.warn('[MCQ] backend submit failed – using local logic', e)
+      }
+    }
+
     if (isCorrect) {
       setMcqState('correct')
       updateConfidence(currentQ.concept, 10)
+      // Also mark locally
+      completeSection(props.courseId, props.sectionId)
       setTimeout(() => {
         onComplete()
       }, 2500)
     } else {
       setMcqState('wrong')
       markWeakConcept(currentQ.concept)
+      // Call parent to reset UI immediately (progress refresh will pull true state from backend)
+      if (result && !result.correct && result.restartFromSectionId) {
+        onRestartFromSection?.(result.restartFromSectionId)
+      }
     }
   }
 
@@ -100,10 +121,14 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...pr
     }, 500)
   }
 
-  // AI analysis data
+  // AI analysis data — prefer backend result if available
   const weakConcepts = [currentQ.concept]
-  const rootCause = findRootCause(weakConcepts)
+  // In a real app with backend, findRootCause should be async, but here we just use the static graph if backend missed it
+  const rootCause = backendResult?.rootCause ?? findRootCause(weakConcepts)
   const chainNodes = annotateChain(currentQ.concept, weakConcepts)
+
+  // Use the backend's correctIndex if the frontend model stripped it
+  const actualCorrectIndex = backendResult?.correctIndex ?? currentQ.correctIndex ?? -1
 
   const optionStyles = (i: number) => {
     if (mcqState === 'answering' || mcqState === 'restarting') {
@@ -112,12 +137,12 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...pr
         : 'border-ink/10 hover:border-gold/40 hover:bg-ink/5 text-ink-soft hover:text-ink cursor-pointer'
     }
     if (mcqState === 'correct') {
-      if (i === currentQ.correctIndex) return 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
+      if (i === actualCorrectIndex) return 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
       return 'border-ink/5 text-ink-muted'
     }
     if (mcqState === 'wrong' || mcqState === 'approach_input' || mcqState === 'analysis') {
       if (i === selectedIndex) return 'border-red-500 bg-red-500/20 text-red-400'
-      if (i === currentQ.correctIndex) return 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400/60'
+      if (i === actualCorrectIndex) return 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400/60'
       return 'border-ink/5 text-ink-muted'
     }
     return 'border-ink/10 text-ink-soft'
@@ -218,7 +243,7 @@ export default function MCQEngine({ questionIds, onComplete, sectionTitle, ...pr
                 <div>
                   <h3 className="font-display text-red-400 text-xl">Incorrect</h3>
                   <p className="font-body text-ink-muted text-sm">
-                    The correct answer was: <span className="text-emerald-400">{currentQ.options[currentQ.correctIndex]}</span>
+                    The correct answer was: <span className="text-emerald-400">{actualCorrectIndex >= 0 ? currentQ.options[actualCorrectIndex] : '...'}</span>
                   </p>
                 </div>
               </div>
