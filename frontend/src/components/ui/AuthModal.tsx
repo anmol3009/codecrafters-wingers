@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Modal } from './Modal'
 import { Button } from './Button'
-import { useUserProgress } from '../../lib/useUserProgress'
+import { useAuth } from '../auth/AuthContext'
 
 interface AuthModalProps {
   open: boolean
@@ -13,13 +13,21 @@ interface AuthModalProps {
 export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { login } = useUserProgress()
+  const { loginWithGoogle } = useAuth()
 
-  const handleSignIn = () => {
-    // TODO: Implement real authentication logic
-    login(email, password)
-    onClose()
-    onSuccess?.()
+  const handleGoogleSignIn = async () => {
+    try {
+      await loginWithGoogle()
+      onClose()
+      onSuccess?.()
+    } catch (err) {
+      console.error('Login failed:', err)
+    }
+  }
+
+  const handleEmailSignIn = () => {
+    // Email sign in not yet implemented with Firebase in this step
+    console.log('Email sign in:', email, password)
   }
 
   return (
@@ -29,7 +37,7 @@ export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) 
         <img src="/image.png" alt="App Logo" className="w-16 h-16 mb-2 rounded-full shadow-lg bg-white object-contain" />
         {/* Google button styled as input */}
         <button
-          onClick={handleSignIn}
+          onClick={handleGoogleSignIn}
           className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 rounded-xl py-3 font-body font-medium border-2 border-[#ffb185] shadow-lg hover:bg-gray-100 transition-colors max-w-xs"
         >
           <GoogleIcon />
@@ -51,7 +59,7 @@ export default function AuthModal({ open, onClose, onSuccess }: AuthModalProps) 
             type="password"
           />
         </div>
-        <Button variant="primary" className="w-full max-w-xs" onClick={handleSignIn}>
+        <Button variant="primary" className="w-full max-w-xs" onClick={handleEmailSignIn}>
           Sign in
         </Button>
       </div>

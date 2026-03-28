@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../ui/Button'
 import { useUserProgress } from '../../lib/useUserProgress'
 import AuthModal from '../ui/AuthModal'
+import { useAuth } from '../auth/AuthContext'
 
 const navLinks = [
   { label: 'Courses', href: '/courses' },
@@ -18,7 +19,8 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const { isLoggedIn, userName, logout } = useUserProgress()
+  const { isLoggedIn, userName } = useUserProgress()
+  const { logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
