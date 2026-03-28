@@ -29,7 +29,7 @@ const STEPS = [
   {
     number: '04',
     title: 'Rebuild Your Path',
-    description: 'ConceptIQ redirects you to the prerequisite concept and gives you a fresh question. Repeat until confident.',
+    description: 'SARASWATI redirects you to the prerequisite concept and gives you a fresh question. Repeat until confident.',
     detail: 'New question variant each retry',
   },
 ]

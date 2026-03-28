@@ -62,7 +62,7 @@ export default function HeroSection() {
             {...fadeUp(0.25)}
             className="font-body text-[#444] text-lg leading-relaxed mb-10 max-w-lg"
           >
-            ConceptIQ detects missing prerequisites, maps your concept graph, and
+            SARASWATI detects missing prerequisites, maps your concept graph, and
             rebuilds your learning path in real time. Every wrong answer becomes
             a stronger foundation.
           </motion.p>
