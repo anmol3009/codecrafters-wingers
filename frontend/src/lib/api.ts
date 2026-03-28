@@ -101,6 +101,7 @@ export const api = {
         questionId: string
         selectedAnswer: number
         explanationText?: string
+        conceptTested?: string
       },
       token: string
     ) => req<McqSubmitResponse>('POST', '/mcq/submit', payload, token),
@@ -111,6 +112,8 @@ export const api = {
   insights: {
     math: (token?: string) =>
       req<{ insights: MathInsights }>('GET', '/teacher-insights/math', undefined, token),
+    topicWrongCounts: (token: string) =>
+      req<TopicWrongCount[]>('GET', '/teacher-insights/topic-wrong-counts', undefined, token),
   },
 }
 
@@ -145,4 +148,13 @@ export interface MathInsights {
     score: number
     weakAreas: string[]
   }>
+}
+
+export interface TopicWrongCount {
+  id: string
+  topicName: string
+  courseId: string
+  courseTitle: string
+  totalWrongAnswers: number
+  lastUpdated: string | null
 }

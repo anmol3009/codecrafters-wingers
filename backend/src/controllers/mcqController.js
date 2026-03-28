@@ -1,6 +1,7 @@
 const { getCourseRaw, getAllCourses } = require('../services/courseService');
 const { recordMCQResult, resetProgressFromSection, getCourseProgress, getEnrolledCourses } = require('../services/progressService');
 const { traceRootCause, findSectionForConcept } = require('../services/conceptService');
+const { db } = require('../config/firebase');
 
 /**
  * POST /mcq/submit
@@ -98,6 +99,41 @@ async function submitMCQ(req, res, next) {
 
     // Reset progress to the restart point
     await resetProgressFromSection(uid, courseId, restartFromSectionId, allSectionIds);
+
+    // ─── Increment wrong answer count for this topic ───────────────────────
+    try {
+      const topicName = conceptTag;
+      const topicKey = topicName.replace(/\s+/g, '_').toLowerCase();
+
+      // Use a default teacher ID since course data has no teacherId field
+      const DEFAULT_TEACHER_ID = process.env.DEFAULT_TEACHER_ID || 'default-teacher';
+
+      const topicRef = db
+        .collection('teacherInsights')
+        .doc(DEFAULT_TEACHER_ID)
+        .collection('topicWrongCounts')
+        .doc(topicKey);
+
+      const topicDoc = await topicRef.get();
+
+      if (!topicDoc.exists) {
+        await topicRef.set({
+          topicName,
+          courseId,
+          courseTitle: course.title || courseId,
+          totalWrongAnswers: 1,
+          lastUpdated: new Date(),
+        });
+      } else {
+        await topicRef.update({
+          totalWrongAnswers: (topicDoc.data().totalWrongAnswers || 0) + 1,
+          lastUpdated: new Date(),
+        });
+      }
+    } catch (topicErr) {
+      console.error('Topic wrong count update failed:', topicErr.message);
+    }
+    // ─── End of topic wrong count block ────────────────────────────────────
 
     return res.json({
       success: false,

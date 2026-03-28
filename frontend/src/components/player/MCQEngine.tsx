@@ -84,6 +84,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
           sectionId: props.sectionId,
           questionId: currentQ.id,
           selectedAnswer: index,
+          conceptTested: currentQ.concept,
         }, authToken)
         setBackendResult(result)
       } catch (e) {

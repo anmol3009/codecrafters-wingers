@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { api } from '../lib/api'
+import { api, type TopicWrongCount } from '../lib/api'
 import { useUserProgress } from '../lib/useUserProgress'
 
 const COMPLETION_COLORS = ['#FFCBA4', '#FFF8F2', '#2e2e2e']
@@ -56,6 +56,11 @@ export default function TeacherInsights() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
+  // Topic wrong counts state
+  const [topicCounts, setTopicCounts] = useState<TopicWrongCount[]>([])
+  const [topicLoading, setTopicLoading] = useState(true)
+  const [topicError, setTopicError] = useState<string | null>(null)
+
   useEffect(() => {
     setLoading(true)
     setError(false)
@@ -63,6 +68,27 @@ export default function TeacherInsights() {
       .then((r: any) => setInsights(r.insights))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
+  }, [authToken])
+
+  // Fetch topic wrong counts
+  const fetchTopicCounts = async () => {
+    if (!authToken) { setTopicLoading(false); return }
+    try {
+      setTopicLoading(true)
+      const data = await api.insights.topicWrongCounts(authToken)
+      setTopicCounts(data)
+      setTopicError(null)
+    } catch (err: any) {
+      setTopicError(err.message)
+    } finally {
+      setTopicLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTopicCounts()
+    const interval = setInterval(fetchTopicCounts, 30000)
+    return () => clearInterval(interval)
   }, [authToken])
 
   if (loading) {
@@ -229,6 +255,93 @@ export default function TeacherInsights() {
                 </ResponsiveContainer>
               </div>
             )}
+
+            {/* ─── Wrong Answers by Topic ──────────────────────────────────── */}
+            <div className="bg-white border-2 border-[#111] p-8 mb-8" style={{ boxShadow: '8px 8px 0 #111' }}>
+              <h3 className="font-display text-[#111] text-2xl mb-2 font-bold flex items-center gap-3">
+                <span className="text-red-500">📊</span> Wrong Answers by Topic
+              </h3>
+              <p className="font-body text-[#666] text-sm mb-6 uppercase tracking-widest font-bold">
+                Incorrect answers submitted by your students, ranked by volume
+              </p>
+
+              {topicLoading && (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gold"></div>
+                </div>
+              )}
+
+              {topicError && (
+                <div className="text-center py-8">
+                  <p className="font-body text-red-400 text-sm mb-3">Failed to load: {topicError}</p>
+                  <button
+                    onClick={fetchTopicCounts}
+                    className="font-body text-sm text-[#111] border-2 border-[#111] px-4 py-2 hover:bg-[#FFCBA4] transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {!topicLoading && !topicError && topicCounts.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">📝</div>
+                  <p className="font-body text-[#666] text-sm">
+                    No wrong answers recorded yet. Data appears here as students attempt MCQs.
+                  </p>
+                </div>
+              )}
+
+              {!topicLoading && topicCounts.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b-2 border-[#111]">
+                        {['Rank', 'Topic', 'Course', 'Wrong Answers', 'Last Activity'].map(h => (
+                          <th key={h} className="text-left px-4 py-3 font-body text-[#666] text-xs uppercase tracking-wider font-bold">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topicCounts.map((topic, index) => {
+                        const maxCount = topicCounts[0].totalWrongAnswers
+                        const barWidth = Math.round((topic.totalWrongAnswers / maxCount) * 100)
+                        const lastUpdated = topic.lastUpdated
+                          ? new Date(topic.lastUpdated).toLocaleDateString()
+                          : 'N/A'
+                        const barColor = index === 0 ? '#e53e3e'
+                          : index === 1 ? '#dd6b20'
+                          : index === 2 ? '#d69e2e'
+                          : '#718096'
+
+                        return (
+                          <tr key={topic.id} className="border-b border-[#eee] hover:bg-[#FFFAF6] transition-colors">
+                            <td className="px-4 py-4 font-body text-[#111] font-bold">#{index + 1}</td>
+                            <td className="px-4 py-4 font-body text-[#111] font-semibold">{topic.topicName}</td>
+                            <td className="px-4 py-4 font-body text-[#666] text-sm">{topic.courseTitle}</td>
+                            <td className="px-4 py-4">
+                              <span className="font-body text-[#111] font-bold text-lg">{topic.totalWrongAnswers}</span>
+                              <div
+                                className="mt-1.5 rounded-full"
+                                style={{
+                                  width: `${barWidth}%`,
+                                  minWidth: '4px',
+                                  height: '4px',
+                                  background: barColor,
+                                }}
+                              />
+                            </td>
+                            <td className="px-4 py-4 font-body text-[#999] text-xs">{lastUpdated}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
             {/* Student table */}
             {studentOverview.length > 0 && (
