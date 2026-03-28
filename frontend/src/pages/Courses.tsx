@@ -8,22 +8,19 @@ import AuthModal from '../components/ui/AuthModal'
 import PaymentModal from '../components/ui/PaymentModal'
 import { api } from '../lib/api'
 
-// Define the type since we aren't importing the JSON directly anymore
 type Course = {
   id: string
   title: string
   subject: string
-  difficulty: string
+  level: string
   description: string
   price: string
   duration: string
   validity: string
   rating: number
   students: number
-  coverGradient: string
-  outcomes: string[]
+  thumbnail: string
   prerequisites: string[]
-  mockIncluded: boolean
 }
 
 interface CourseCardProps {
@@ -76,22 +73,27 @@ function CourseCard({ course }: CourseCardProps) {
         <Link to={`/courses/${course.id}`} className="block h-full">
           <div className="bg-white border-2 border-[#111] flex flex-col h-full min-h-[540px] max-w-xl mx-auto overflow-hidden transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5">
             {/* Cover */}
-            <div className={`h-40 bg-gradient-to-br ${course.coverGradient} relative overflow-hidden`}> 
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display text-ink/10 text-8xl font-bold select-none">
-                  {course.subject.charAt(0)}
-                </span>
-              </div>
+            <div className="h-40 relative overflow-hidden bg-white group">
+              {course.thumbnail ? (
+                <img 
+                  src={course.thumbnail} 
+                  alt={course.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                  <span className="font-display text-ink/10 text-8xl font-bold select-none">
+                    {course.subject.charAt(0)}
+                  </span>
+                </div>
+              )}
+              {/* Overlay gradient to ensure badges remain legible */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="absolute top-3 left-3 flex gap-2">
-                <DifficultyBadge difficulty={course.difficulty} />
-                {course.mockIncluded && (
-                  <Badge variant="gold">Mock ✓</Badge>
-                )}
+                <DifficultyBadge difficulty={course.level} />
               </div>
-              <div className="absolute top-3 right-3">
-                <span className="font-display text-ink/90 text-xl font-light">
-                  {course.subject.charAt(0)}
-                </span>
+              <div className="absolute top-3 right-3 font-display text-white text-xl font-light drop-shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+                {course.subject.charAt(0)}
               </div>
             </div>
 
@@ -103,23 +105,6 @@ function CourseCard({ course }: CourseCardProps) {
               <p className="font-body text-ink-soft text-sm mb-4 leading-relaxed">
                 {course.description}
               </p>
-
-              {/* What you'll learn */}
-              <div className="mb-4">
-                <p className="font-body text-ink-muted text-xs uppercase tracking-wider mb-2">
-                  What you'll learn
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {course.outcomes.map(o => (
-                    <span
-                      key={o}
-                      className="font-body text-xs text-ink-soft bg-ink/5 px-2 py-0.5 rounded"
-                    >
-                      {o}
-                    </span>
-                  ))}
-                </div>
-              </div>
 
               {/* Prerequisites */}
               <div className="mb-5">
@@ -215,7 +200,7 @@ export default function Courses() {
 
   const filtered = courses.filter(c => {
     const matchSubject = subject === 'All' || c.subject === subject
-    const matchDifficulty = difficulty === 'All' || c.difficulty === difficulty
+    const matchDifficulty = difficulty === 'All' || c.level === difficulty
     const matchQuery = !query || c.title.toLowerCase().includes(query.toLowerCase())
     return matchSubject && matchDifficulty && matchQuery
   })
