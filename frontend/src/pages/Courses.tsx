@@ -1,14 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { DifficultyBadge, Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { useUserProgress } from '../lib/useUserProgress'
 import AuthModal from '../components/ui/AuthModal'
-import coursesData from '../data/courses.json'
 import PaymentModal from '../components/ui/PaymentModal'
+import { api } from '../lib/api'
 
-type Course = (typeof coursesData)[0]
+// Define the type since we aren't importing the JSON directly anymore
+type Course = {
+  id: string
+  title: string
+  subject: string
+  difficulty: string
+  description: string
+  price: string
+  duration: string
+  validity: string
+  rating: number
+  students: number
+  coverGradient: string
+  outcomes: string[]
+  prerequisites: string[]
+  mockIncluded: boolean
+}
 
 interface CourseCardProps {
   course: Course
@@ -164,6 +180,7 @@ function CourseCard({ course }: CourseCardProps) {
         onSuccess={handlePaymentSuccess}
         courseTitle={course.title}
         price={course.price}
+        courseId={course.id}
       />
     </>
   )
@@ -177,8 +194,26 @@ export default function Courses() {
   const [subject, setSubject] = useState(searchParams.get('subject') ?? 'All')
   const [difficulty, setDifficulty] = useState('All')
   const [query] = useState(searchParams.get('q') ?? '')
+  
+  // New: Fetch from backend API
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filtered = coursesData.filter(c => {
+  useEffect(() => {
+    setLoading(true)
+    api.courses.list()
+      .then(data => {
+        setCourses(data.courses as Course[])
+      })
+      .catch(err => {
+        console.error("Failed to fetch courses:", err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  const filtered = courses.filter(c => {
     const matchSubject = subject === 'All' || c.subject === subject
     const matchDifficulty = difficulty === 'All' || c.difficulty === difficulty
     const matchQuery = !query || c.title.toLowerCase().includes(query.toLowerCase())
@@ -241,8 +276,13 @@ export default function Courses() {
           </div>
         </div>
 
-        {/* Grid */}
-        <motion.div
+        {/* Grid Container */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+          </div>
+        ) : (
+          <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -259,8 +299,9 @@ export default function Courses() {
             </motion.div>
           ))}
         </motion.div>
+        )}
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="text-center py-20">
             <p className="font-display text-ink-muted text-2xl">No courses found</p>
             <p className="font-body text-ink-muted mt-2">Try adjusting your filters</p>

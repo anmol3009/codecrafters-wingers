@@ -1,8 +1,18 @@
-import conceptGraph from '../data/concept-graph.json'
+import { api } from './api'
 
 type ConceptGraph = Record<string, string[]>
 
-const graph = conceptGraph as ConceptGraph
+let graph: ConceptGraph = {}
+
+export async function initConceptGraph() {
+  if (Object.keys(graph).length > 0) return
+  try {
+    const res = await api.concepts.graph()
+    graph = res.graph
+  } catch (err) {
+    console.error('Failed to load concept graph', err)
+  }
+}
 
 /**
  * Post-order DFS: builds chain root → leaf naturally.

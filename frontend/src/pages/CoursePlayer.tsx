@@ -5,9 +5,9 @@ import { Button } from '../components/ui/Button'
 import { DifficultyBadge } from '../components/ui/Badge'
 import MCQEngine from '../components/player/MCQEngine'
 import { useUserProgress } from '../lib/useUserProgress'
-import coursesData from '../data/courses.json'
+import { api } from '../lib/api'
 
-// ✅ CHANGE 1: Add this global declaration after imports so TypeScript knows window.YT exists
+// Global declaration so TypeScript knows window.YT exists
 declare global {
   interface Window {
     YT: any
@@ -15,33 +15,49 @@ declare global {
   }
 }
 
-type Course = (typeof coursesData)[0]
+interface Course {
+  id: string
+  title: string
+  subject: string
+  difficulty: string
+  syllabus: any[]
+}
 
 export default function CoursePlayer() {
   const { id } = useParams<{ id: string }>()
-  const course = (coursesData.find(c => c.id === id) ?? null) as Course | null
-  const { enrolledCourses, enrollCourse, completedSections, completeSection, setCurrentSection } = useUserProgress()
+  const { enrolledCourses, enrollCourse, completedSections, completeSection, setCurrentSection, authToken } = useUserProgress()
 
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [activeSectionIndex, setActiveSectionIndex] = useState(0)
   const [showMCQ, setShowMCQ] = useState(false)
 
-  // ✅ CHANGE 2: Remove mcqTimer state. Add these two instead:
-  const [videoEnded, setVideoEnded] = useState(false)    // becomes true when YouTube fires ENDED event
-  const [quizStarted, setQuizStarted] = useState(false)  // becomes true when user clicks "Start Quiz"
+  const [videoEnded, setVideoEnded] = useState(false)
+  const [quizStarted, setQuizStarted] = useState(false)
 
-  // ✅ CHANGE 3: Add these two refs
-  const playerRef = useRef<any>(null)                          // holds the YT.Player instance
-  const playerContainerRef = useRef<HTMLDivElement>(null)      // the div YouTube renders into
+  const playerRef = useRef<any>(null)
+  const playerContainerRef = useRef<HTMLDivElement>(null)
 
+  // Fetch course from API
   useEffect(() => {
-    if (course && !enrolledCourses.includes((course as any).id)) {
-      enrollCourse((course as any).id)
-    }
-  }, [course, enrolledCourses, enrollCourse])
+    if (!id) return
+    setLoading(true)
+    api.courses.get(id)
+      .then(res => {
+        setCourse(res.course)
+        if (res.course && !enrolledCourses.includes(res.course.id)) {
+          enrollCourse(res.course.id)
+        }
+      })
+      .catch(err => {
+        console.error(err)
+        setError(true)
+      })
+      .finally(() => setLoading(false))
+  }, [id, enrolledCourses, enrollCourse])
 
-  // ✅ CHANGE 4: Delete the entire old 30-second countdown useEffect and replace with these two:
-
-  // Loads the YouTube IFrame API script once on mount
+  // Load YouTube IFrame API script once on mount
   useEffect(() => {
     if (!document.getElementById('yt-api-script')) {
       const tag = document.createElement('script')
@@ -51,26 +67,23 @@ export default function CoursePlayer() {
     }
   }, [])
 
-  // Initializes (or re-initializes) the YouTube player every time the active section changes
+  // Initialize (or re-initialize) the YouTube player on each section change
   useEffect(() => {
     if (!course) return
-    const c = course as Course
-    const videoId = c.syllabus[activeSectionIndex].videoId
+    const videoId = course.syllabus[activeSectionIndex]?.videoId
+    if (!videoId) return
 
     const initPlayer = () => {
-      // Destroy the previous player instance so they don't stack up
       if (playerRef.current) {
         playerRef.current.destroy()
         playerRef.current = null
       }
-      // Recreate the inner div because YT.destroy() removes it from the DOM
       if (playerContainerRef.current) {
         playerContainerRef.current.innerHTML = ''
         const div = document.createElement('div')
         div.id = 'yt-player'
         playerContainerRef.current.appendChild(div)
       }
-      // Create the YouTube player — this is how you detect video end
       playerRef.current = new window.YT.Player('yt-player', {
         videoId,
         playerVars: { rel: 0, modestbranding: 1 },
@@ -78,30 +91,41 @@ export default function CoursePlayer() {
         height: '100%',
         events: {
           onStateChange: (event: any) => {
-            // YT.PlayerState.ENDED === 0 — fires when video reaches the end
             if (event.data === window.YT.PlayerState.ENDED) {
               setVideoEnded(true)
+              // Notify backend that video was watched
+              if (authToken && course) {
+                const sectionId = course.syllabus[activeSectionIndex]?.id
+                if (sectionId) {
+                  api.progress.videoComplete(course.id, sectionId, authToken).catch(console.warn)
+                }
+              }
             }
           },
         },
       })
     }
 
-    // If the API script is already loaded and ready, init immediately
-    // Otherwise register the global callback that YouTube calls when it loads
     if (window.YT && window.YT.Player) {
       initPlayer()
     } else {
       window.onYouTubeIframeAPIReady = initPlayer
     }
 
-    // Reset all quiz states whenever the section changes
     setVideoEnded(false)
     setQuizStarted(false)
     setShowMCQ(false)
   }, [activeSectionIndex, course])
 
-  if (course === null) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center pt-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
+    )
+  }
+
+  if (error || !course) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center pt-20">
         <div className="text-center">
@@ -122,13 +146,12 @@ export default function CoursePlayer() {
     return completedIds.includes(prevSection.id)
   }
 
-  // ✅ CHANGE 5: Add videoEnded and quizStarted resets here
   function handleSectionClick(idx: number) {
     if (!isUnlocked(idx)) return
     setActiveSectionIndex(idx)
     setShowMCQ(false)
-    setVideoEnded(false)    // ← add this
-    setQuizStarted(false)   // ← add this
+    setVideoEnded(false)
+    setQuizStarted(false)
     setCurrentSection(c.id, c.syllabus[idx].id)
   }
 
@@ -139,6 +162,16 @@ export default function CoursePlayer() {
       setTimeout(() => {
         setActiveSectionIndex(activeSectionIndex + 1)
       }, 800)
+    }
+  }
+
+  function handleRestartFromSection(sectionId: string) {
+    const idx = c.syllabus.findIndex(s => s.id === sectionId)
+    if (idx !== -1) {
+      setActiveSectionIndex(idx)
+      setShowMCQ(false)
+      setVideoEnded(false)
+      setQuizStarted(false)
     }
   }
 
@@ -182,26 +215,21 @@ export default function CoursePlayer() {
           {/* Left: Video + MCQ */}
           <div className="space-y-6">
             <div className="glass-navy rounded-2xl overflow-hidden">
-
-              {/* ✅ CHANGE 6: Replace <iframe> with a ref'd div so YouTube API can control it */}
               <div className="aspect-video bg-black relative">
                 <div ref={playerContainerRef} className="absolute inset-0 w-full h-full">
                   <div id="yt-player" className="w-full h-full" />
                 </div>
               </div>
 
-              {/* ✅ CHANGE 7: Replace "Quiz in Xs" with locked/unlocked quiz UI */}
               <div className="p-5 flex items-center justify-between">
                 <div>
                   <p className="font-display text-ink text-lg">{activeSection.title}</p>
                   <p className="font-body text-ink-muted text-sm mt-1">⏱ {activeSection.duration}</p>
                 </div>
 
-                {/* Only show this block if section isn't already completed */}
                 {!completedIds.includes(activeSection.id) && !quizStarted && (
                   <div className="text-right">
                     {!videoEnded ? (
-                      // Video still playing — show locked state
                       <div className="flex items-center gap-2 text-ink-muted">
                         <span className="text-xl">🔒</span>
                         <div>
@@ -210,7 +238,6 @@ export default function CoursePlayer() {
                         </div>
                       </div>
                     ) : (
-                      // Video finished — show the Start Quiz button with a pop-in animation
                       <motion.button
                         initial={{ opacity: 0, scale: 0.85 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -226,7 +253,6 @@ export default function CoursePlayer() {
               </div>
             </div>
 
-            {/* MCQ — appears only after clicking Start Quiz */}
             <AnimatePresence>
               {showMCQ && (
                 <motion.div
@@ -236,8 +262,9 @@ export default function CoursePlayer() {
                   transition={{ duration: 0.4 }}
                 >
                   <MCQEngine
-                    questionIds={activeSection.mcqIds}
+                    questions={activeSection.mcqs || []}
                     onComplete={handleMCQComplete}
+                    onRestartFromSection={handleRestartFromSection}
                     sectionTitle={activeSection.title}
                     courseId={c.id}
                     sectionId={activeSection.id}
@@ -255,7 +282,7 @@ export default function CoursePlayer() {
             )}
           </div>
 
-          {/* Right: Syllabus — unchanged */}
+          {/* Right: Syllabus */}
           <div className="glass-navy rounded-2xl p-6 h-fit sticky top-28">
             <h3 className="font-display text-ink text-xl mb-5">Syllabus</h3>
             <div className="space-y-2">

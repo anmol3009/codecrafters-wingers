@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { api } from './api'
 
 export interface MCQAttempt {
   questionId: string
@@ -11,10 +12,12 @@ export interface MCQAttempt {
 }
 
 interface UserProgressState {
-  // Auth (demo)
+  // Auth
   isLoggedIn: boolean
   userName: string
   userEmail: string
+  /** Firebase ID token — set after login, used for all protected API calls */
+  authToken: string
 
   // Enrollment
   enrolledCourses: string[]
@@ -31,10 +34,14 @@ interface UserProgressState {
   mcqAttempts: MCQAttempt[]
 
   // Actions
-  login: (name: string, email: string) => void
+  login: (name: string, email: string, token?: string) => void
   logout: () => void
+  setAuthToken: (token: string) => void
+  /** Validates persisted token against backend; auto-logouts if stale */
+  validateSession: () => Promise<void>
   enrollCourse: (courseId: string) => void
   completeSection: (courseId: string, sectionId: string) => void
+  resetProgressFromSection: (courseId: string, fromSectionId: string, allSectionIds: string[]) => void
   setCurrentSection: (courseId: string, sectionId: string) => void
   recordMCQAttempt: (attempt: MCQAttempt) => void
   markWeakConcept: (concept: string) => void
@@ -49,6 +56,7 @@ export const useUserProgress = create<UserProgressState>()(
       isLoggedIn: false,
       userName: '',
       userEmail: '',
+      authToken: '',
       enrolledCourses: [],
       completedSections: {},
       currentSections: {},
@@ -56,18 +64,46 @@ export const useUserProgress = create<UserProgressState>()(
       confidenceScores: {},
       mcqAttempts: [],
 
-      login: (name, email) => set({ isLoggedIn: true, userName: name, userEmail: email }),
-      logout: () => set({ isLoggedIn: false, userName: '', userEmail: '' }),
+      login: (name, email, token = '') =>
+        set({ isLoggedIn: true, userName: name, userEmail: email, authToken: token }),
 
-      enrollCourse: (courseId) => set(state => ({
-        enrolledCourses: state.enrolledCourses.includes(courseId)
-          ? state.enrolledCourses
-          : [...state.enrolledCourses, courseId],
-        completedSections: {
-          ...state.completedSections,
-          [courseId]: state.completedSections[courseId] ?? [],
-        },
-      })),
+      logout: () => set({ isLoggedIn: false, userName: '', userEmail: '', authToken: '' }),
+
+      setAuthToken: (token) => set({ authToken: token }),
+
+      validateSession: async () => {
+        const { isLoggedIn, authToken } = get()
+        if (!isLoggedIn || !authToken) {
+          // No session persisted — nothing to validate
+          if (isLoggedIn) set({ isLoggedIn: false, userName: '', userEmail: '', authToken: '' })
+          return
+        }
+        try {
+          await api.auth.me(authToken)
+          // Token is still valid — keep session
+        } catch {
+          // Token expired or invalid — clear session
+          set({ isLoggedIn: false, userName: '', userEmail: '', authToken: '' })
+        }
+      },
+
+      enrollCourse: (courseId) => {
+        // Optimistic local update
+        set(state => ({
+          enrolledCourses: state.enrolledCourses.includes(courseId)
+            ? state.enrolledCourses
+            : [...state.enrolledCourses, courseId],
+          completedSections: {
+            ...state.completedSections,
+            [courseId]: state.completedSections[courseId] ?? [],
+          },
+        }))
+        // Sync with backend (fire-and-forget; local state is already updated)
+        const token = get().authToken
+        if (token) {
+          api.enrollment.enroll(courseId, token).catch(console.warn)
+        }
+      },
 
       completeSection: (courseId, sectionId) => set(state => {
         const existing = state.completedSections[courseId] ?? []
@@ -77,6 +113,18 @@ export const useUserProgress = create<UserProgressState>()(
             ...state.completedSections,
             [courseId]: [...existing, sectionId],
           },
+        }
+      }),
+
+      resetProgressFromSection: (courseId, fromSectionId, allSectionIds) => set(state => {
+        const existing = state.completedSections[courseId] ?? []
+        const cutIdx = allSectionIds.indexOf(fromSectionId)
+        const trimmed = cutIdx >= 0
+          ? existing.filter(sid => allSectionIds.indexOf(sid) < cutIdx)
+          : existing
+        return {
+          completedSections: { ...state.completedSections, [courseId]: trimmed },
+          currentSections: { ...state.currentSections, [courseId]: fromSectionId },
         }
       }),
 
@@ -120,6 +168,7 @@ export const useUserProgress = create<UserProgressState>()(
         isLoggedIn: state.isLoggedIn,
         userName: state.userName,
         userEmail: state.userEmail,
+        authToken: state.authToken,
         enrolledCourses: state.enrolledCourses,
         completedSections: state.completedSections,
         currentSections: state.currentSections,

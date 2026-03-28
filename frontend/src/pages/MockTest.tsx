@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button'
 import ConceptGraph from '../components/player/ConceptGraph'
 import { annotateChain, findRootCause } from '../lib/conceptEngine'
 import { useUserProgress } from '../lib/useUserProgress'
-import mcqBank from '../data/mcq-bank.json'
+import { api } from '../lib/api'
 
 interface MCQQuestion {
   id: string
@@ -17,10 +17,9 @@ interface MCQQuestion {
   variant: number
 }
 
-const ALL_QUESTIONS = mcqBank as MCQQuestion[]
 const TEST_DURATION = 300 // 5 minutes in seconds
 
-type TestState = 'setup' | 'running' | 'finished'
+type TestState = 'setup' | 'loading' | 'running' | 'finished'
 
 interface Answer {
   questionId: string
@@ -42,24 +41,32 @@ export default function MockTest() {
   const subjects = ['All', 'Mathematics', 'Physics', 'Chemistry', 'Computer Science']
   const QUESTION_COUNT = 10
 
-  function startTest() {
-    let pool = selectedSubject === 'All'
-      ? ALL_QUESTIONS
-      : ALL_QUESTIONS.filter(q => {
-          const mathConcepts = ['Algebra', 'Linear', 'Quadratic', 'Arithmetic']
-          const physicsConcepts = ["Newton's Laws", 'Kinematics']
-          if (selectedSubject === 'Mathematics') return mathConcepts.some(c => q.concept.includes(c))
-          if (selectedSubject === 'Physics') return physicsConcepts.some(c => q.concept.includes(c))
-          return true
-        })
+  async function startTest() {
+    setTestState('loading')
+    try {
+      const { questions: allQuestions } = await api.mcq.mock()
+      
+      let pool = selectedSubject === 'All'
+        ? allQuestions
+        : allQuestions.filter(q => {
+            const mathConcepts = ['Algebra', 'Linear', 'Quadratic', 'Arithmetic']
+            const physicsConcepts = ["Newton's Laws", 'Kinematics']
+            if (selectedSubject === 'Mathematics') return mathConcepts.some(c => q.concept.includes(c))
+            if (selectedSubject === 'Physics') return physicsConcepts.some(c => q.concept.includes(c))
+            return true
+          })
 
-    const shuffled = [...pool].sort(() => Math.random() - 0.5)
-    setQuestions(shuffled.slice(0, Math.min(QUESTION_COUNT, shuffled.length)))
-    setCurrentIdx(0)
-    setAnswers([])
-    setSelectedOption(null)
-    setTimeLeft(TEST_DURATION)
-    setTestState('running')
+      const shuffled = [...pool].sort(() => Math.random() - 0.5)
+      setQuestions(shuffled.slice(0, Math.min(QUESTION_COUNT, shuffled.length)))
+      setCurrentIdx(0)
+      setAnswers([])
+      setSelectedOption(null)
+      setTimeLeft(TEST_DURATION)
+      setTestState('running')
+    } catch (err) {
+      console.error('Failed to load mock test questions:', err)
+      setTestState('setup')
+    }
   }
 
   // Timer
@@ -182,6 +189,19 @@ export default function MockTest() {
               <Button variant="gold" size="lg" className="w-full" onClick={startTest}>
                 Start Mock Test
               </Button>
+            </motion.div>
+          )}
+
+          {/* LOADING */}
+          {testState === 'loading' && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex justify-center items-center py-32"
+            >
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
             </motion.div>
           )}
 
