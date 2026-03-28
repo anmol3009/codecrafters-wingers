@@ -16,7 +16,8 @@ export default function CoursePlayer() {
 
   const [activeSectionIndex, setActiveSectionIndex] = useState(0)
   const [showMCQ, setShowMCQ] = useState(false)
-  const [mcqTimer, setMcqTimer] = useState(30) // seconds until MCQ appears
+  const [videoProgress, setVideoProgress] = useState(0)
+  const [videoComplete, setVideoComplete] = useState(false)
 
   useEffect(() => {
     if (course && !enrolledCourses.includes(c.id)) {
@@ -25,21 +26,26 @@ export default function CoursePlayer() {
   }, [course, enrolledCourses, enrollCourse])
 
   useEffect(() => {
-    if (!showMCQ) {
-      setMcqTimer(30)
-      const interval = setInterval(() => {
-        setMcqTimer(t => {
-          if (t <= 1) {
-            clearInterval(interval)
-            setShowMCQ(true)
-            return 0
-          }
-          return t - 1
-        })
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [activeSectionIndex, showMCQ])
+    setVideoProgress(0)
+    setVideoComplete(false)
+    setShowMCQ(false)
+
+    // Simulate video watching progress
+    // For demo purposes, we speed it up (1% every 200ms)
+    const interval = setInterval(() => {
+      setVideoProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setVideoComplete(true)
+          setTimeout(() => setShowMCQ(true), 1000)
+          return 100
+        }
+        return prev + 1
+      })
+    }, 150) // About 15s to finish the video in demo
+
+    return () => clearInterval(interval)
+  }, [activeSectionIndex])
 
   if (course === null) {
     return (
@@ -122,25 +128,38 @@ export default function CoursePlayer() {
           <div className="space-y-6">
             {/* Video Player */}
             <div className="glass-navy rounded-2xl overflow-hidden">
-              <div className="aspect-video bg-black relative">
+              <div className="aspect-video bg-[#111] relative border-b-2 border-[#111]">
                 <iframe
                   key={activeSection.videoId}
-                  src={`https://www.youtube.com/embed/${activeSection.videoId}?autoplay=0&rel=0&modestbranding=1`}
+                  src={`https://www.youtube.com/embed/${activeSection.videoId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1`}
                   title={activeSection.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  className="absolute inset-0 w-full h-full"
+                  className="absolute inset-0 w-full h-full pointer-events-none"
                 />
-              </div>
-              <div className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="font-display text-ink text-lg">{activeSection.title}</p>
-                  <p className="font-body text-ink-muted text-sm mt-1">⏱ {activeSection.duration}</p>
+                
+                {/* Progress Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
+                  <motion.div 
+                    className="h-full bg-[#FFCBA4]" 
+                    style={{ width: `${videoProgress}%` }}
+                  />
                 </div>
-                {!showMCQ && (
-                  <div className="text-right">
-                    <p className="font-body text-ink-muted text-xs">Quiz in</p>
-                    <p className="font-display text-gold text-2xl">{mcqTimer}s</p>
+              </div>
+              
+              <div className="p-6 bg-white flex items-center justify-between">
+                <div>
+                  <h4 className="font-display text-[#111] text-xl font-bold">{activeSection.title}</h4>
+                  <div className="flex gap-4 mt-2">
+                    <span className="font-body text-[#666] text-xs">⏱ {activeSection.duration}</span>
+                    <span className="font-body text-[#111] text-xs font-bold uppercase tracking-wider">
+                      {videoComplete ? '✓ Video Finish' : `Watching... ${videoProgress}%`}
+                    </span>
+                  </div>
+                </div>
+                {!videoComplete && (
+                  <div className="bg-[#111] text-[#FFCBA4] px-4 py-2 border-2 border-[#111] font-body text-xs font-bold uppercase tracking-widest" style={{ boxShadow: '4px 4px 0 #333' }}>
+                    🔒 Quiz Locked 
                   </div>
                 )}
               </div>
@@ -159,6 +178,8 @@ export default function CoursePlayer() {
                     questionIds={activeSection.mcqIds}
                     onComplete={handleMCQComplete}
                     sectionTitle={activeSection.title}
+                    courseId={c.id}
+                    sectionId={activeSection.id}
                   />
                 </motion.div>
               )}

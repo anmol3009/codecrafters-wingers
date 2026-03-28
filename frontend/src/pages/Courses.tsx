@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { useUserProgress } from '../lib/useUserProgress'
 import AuthModal from '../components/ui/AuthModal'
 import coursesData from '../data/courses.json'
+import PaymentModal from '../components/ui/PaymentModal'
 
 type Course = (typeof coursesData)[0]
 
@@ -21,6 +22,7 @@ function CourseCard({ course }: CourseCardProps) {
 
   const { isLoggedIn, enrolledCourses, enrollCourse } = useUserProgress()
   const [authOpen, setAuthOpen] = useState(false)
+  const [paymentOpen, setPaymentOpen] = useState(false)
   const isEnrolled = enrolledCourses.includes(course.id)
 
   function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -32,11 +34,18 @@ function CourseCard({ course }: CourseCardProps) {
 
   function handleEnroll(e: React.MouseEvent) {
     e.preventDefault()
+    if (isEnrolled) return
+    
     if (!isLoggedIn) {
       setAuthOpen(true)
       return
     }
+    setPaymentOpen(true)
+  }
+
+  const handlePaymentSuccess = () => {
     enrollCourse(course.id)
+    setPaymentOpen(false)
   }
 
   return (
@@ -143,7 +152,15 @@ function CourseCard({ course }: CourseCardProps) {
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
-        onSuccess={() => enrollCourse(course.id)}
+        onSuccess={() => setPaymentOpen(true)}
+      />
+
+      <PaymentModal
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        onSuccess={handlePaymentSuccess}
+        courseTitle={course.title}
+        price={course.price}
       />
     </>
   )
