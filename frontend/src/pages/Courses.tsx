@@ -50,7 +50,7 @@ function CourseCard({ course }: CourseCardProps) {
         className="relative group"
       >
         <Link to={`/courses/${course.id}`}>
-          <div className="glass-navy rounded-2xl overflow-hidden border border-ink/5 hover:border-gold/30 transition-all duration-300 shadow-card">
+          <div className="bg-white border-2 border-[#111] overflow-hidden transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5">
             {/* Cover */}
             <div
               className={`h-40 bg-gradient-to-br ${course.coverGradient} relative overflow-hidden`}
@@ -195,7 +195,7 @@ export default function Courses() {
                 onClick={() => setSubject(s)}
                 className={`px-4 py-1.5 rounded-full font-body text-sm transition-all ${
                   subject === s
-                    ? 'bg-gold text-navy-dark'
+                    ? 'bg-[#FFCBA4] text-[#111] border-2 border-[#111] font-bold'
                     : 'border border-ink/20 text-ink-soft hover:border-gold hover:text-gold bg-white'
                 }`}
               >
@@ -211,7 +211,7 @@ export default function Courses() {
                 onClick={() => setDifficulty(d)}
                 className={`px-4 py-1.5 rounded-full font-body text-sm transition-all ${
                   difficulty === d
-                    ? 'bg-navy-light border border-gold/40 text-gold'
+                    ? 'bg-[#FFCBA4] text-[#111] border-2 border-[#111] font-bold'
                     : 'border border-ink/20 text-ink-soft hover:border-gold hover:text-gold bg-white'
                 }`}
               >

@@ -51,7 +51,7 @@ const CARDS = [
     subtitle: 'Timed practice with concept diagnosis',
     cta: 'Start a Mock Test →',
     href: '/mock-test',
-    accent: '#FA8112',
+    accent: '#FFCBA4',
   },
 ]
 
@@ -95,7 +95,7 @@ function CarouselCard({ card, index, rotation }: CarouselCardProps) {
           className="w-full h-full rounded-2xl flex flex-col justify-between p-7 cursor-pointer group"
           style={{
             background: 'rgba(34, 34, 34, 0.8)',
-            border: '1px solid rgba(250, 129, 18, 0.35)',
+            border: '1px solid rgba(255, 230, 0, 0.35)',
             backdropFilter: 'blur(16px)',
             boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
           }}
@@ -124,7 +124,7 @@ function CarouselCard({ card, index, rotation }: CarouselCardProps) {
           {/* Bottom: CTA */}
           <div
             className="pt-5 border-t text-sm font-body transition-all duration-300 group-hover:text-gold"
-            style={{ borderColor: 'rgba(250, 129, 18, 0.2)', color: 'rgba(250, 129, 18, 0.7)' }}
+            style={{ borderColor: 'rgba(255, 230, 0, 0.2)', color: 'rgba(255, 230, 0, 0.7)' }}
           >
             {card.cta}
           </div>
@@ -217,7 +217,7 @@ export default function CardCarousel3D() {
             key={i}
             className="w-1.5 h-1.5 rounded-full transition-all duration-300"
             style={{
-              background: i === activeIndex ? '#FA8112' : 'rgba(255,255,255,0.2)',
+              background: i === activeIndex ? '#FFCBA4' : 'rgba(255,255,255,0.2)',
               width: i === activeIndex ? 20 : 6,
             }}
           />

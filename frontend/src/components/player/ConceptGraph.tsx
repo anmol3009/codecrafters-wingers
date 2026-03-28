@@ -35,7 +35,7 @@ export default function ConceptGraph({ nodes, className }: ConceptGraphProps) {
             <motion.line
               key={`line-${i}`}
               x1={x1} y1={y} x2={x2} y2={y}
-              stroke="rgba(250,129,18,0.4)"
+              stroke="rgba(255,230,0,0.4)"
               strokeWidth={2}
               strokeDasharray="80"
               initial={{ strokeDashoffset: 80 }}
@@ -53,7 +53,7 @@ export default function ConceptGraph({ nodes, className }: ConceptGraphProps) {
             <motion.polygon
               key={`arrow-${i}`}
               points={`${x2 - 6},${y - 4} ${x2},${y} ${x2 - 6},${y + 4}`}
-              fill="rgba(250,129,18,0.4)"
+              fill="rgba(255,230,0,0.4)"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.18 + 0.45 }}
@@ -72,8 +72,8 @@ export default function ConceptGraph({ nodes, className }: ConceptGraphProps) {
                 width={NODE_W}
                 height={NODE_H}
                 rx={8}
-                fill={isWeak ? 'rgba(239,68,68,0.15)' : 'rgba(250,129,18,0.1)'}
-                stroke={isWeak ? '#ef4444' : 'rgba(250,129,18,0.4)'}
+                fill={isWeak ? 'rgba(239,68,68,0.15)' : 'rgba(255,230,0,0.1)'}
+                stroke={isWeak ? '#ef4444' : 'rgba(255,230,0,0.4)'}
                 strokeWidth={isWeak ? 2 : 1}
                 initial={{ opacity: 0, scaleX: 0.7 }}
                 animate={{

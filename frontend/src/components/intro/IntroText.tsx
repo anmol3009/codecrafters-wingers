@@ -222,7 +222,7 @@ export default function IntroText({ onComplete }: IntroTextProps) {
             animate={{
               height: i === current ? 20 : 6,
               width: 6,
-              backgroundColor: i === current ? '#FA8112' : 'rgba(255,255,255,0.22)',
+              backgroundColor: i === current ? '#FFCBA4' : 'rgba(255,255,255,0.22)',
             }}
             transition={{ duration: 0.3 }}
           />

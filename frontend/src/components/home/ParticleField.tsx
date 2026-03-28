@@ -32,7 +32,7 @@ function Particles() {
     <points ref={ref} geometry={geometry}>
       <pointsMaterial
         size={0.04}
-        color="#FA8112"
+        color="#FFCBA4"
         transparent
         opacity={0.5}
         sizeAttenuation
