@@ -1,30 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const FRAMES = [
   {
-    word: 'Who',
+    word: 'Learn',
     sub: 'begins every great journey',
     bg: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1920&q=80',
   },
   {
-    word: 'are',
-    sub: 'the minds that shape tomorrow',
-    bg: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&q=80',
-  },
-  {
-    word: 'Deep',
-    sub: 'thinkers, curious beyond limits',
+    word: 'Leave',
+    sub: 'a mark on the minds of tomorrow',
     bg: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80',
   },
   {
-    word: 'Learners',
-    sub: 'who inspire the world',
+    word: 'Achieve & Contribute',
+    sub: 'and inspire the world',
     bg: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=1920&q=80',
   },
 ]
-
-const DEBOUNCE_MS = 900
 
 const textVariants = {
   enter: (dir: number) => ({
@@ -53,57 +46,22 @@ interface IntroTextProps {
 
 export default function IntroText({ onComplete }: IntroTextProps) {
   const [current, setCurrent] = useState(0)
-  const [dir, setDir] = useState(1)
-  const lastEventTime = useRef(0)
+  const [dir] = useState(1)
   const isLast = current === FRAMES.length - 1
 
-  const advance = useCallback(
-    (delta: number) => {
-      const now = Date.now()
-      if (now - lastEventTime.current < DEBOUNCE_MS) return
-      lastEventTime.current = now
-
-      if (delta > 0 && current < FRAMES.length - 1) {
-        setDir(1)
-        setCurrent(c => c + 1)
-      } else if (delta < 0 && current > 0) {
-        setDir(-1)
-        setCurrent(c => c - 1)
-      }
-    },
-    [current]
-  )
-
-  // Wheel
+  // Auto-advance every 2 seconds
   useEffect(() => {
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      advance(e.deltaY)
-    }
-    window.addEventListener('wheel', onWheel, { passive: false })
-    return () => window.removeEventListener('wheel', onWheel)
-  }, [advance])
+    if (isLast) return
+    const t = setTimeout(() => {
+      setCurrent(c => c + 1)
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [current, isLast])
 
-  // Touch swipe
-  useEffect(() => {
-    let startY = 0
-    const onStart = (e: TouchEvent) => { startY = e.touches[0].clientY }
-    const onEnd = (e: TouchEvent) => {
-      const dy = startY - e.changedTouches[0].clientY
-      if (Math.abs(dy) > 40) advance(dy)
-    }
-    window.addEventListener('touchstart', onStart, { passive: true })
-    window.addEventListener('touchend', onEnd, { passive: true })
-    return () => {
-      window.removeEventListener('touchstart', onStart)
-      window.removeEventListener('touchend', onEnd)
-    }
-  }, [advance])
-
-  // Auto-transition to globe after landing on last frame
+  // Auto-complete after last frame shows for 2 seconds
   useEffect(() => {
     if (!isLast) return
-    const t = setTimeout(onComplete, 1800)
+    const t = setTimeout(onComplete, 2000)
     return () => clearTimeout(t)
   }, [isLast, onComplete])
 
@@ -127,7 +85,7 @@ export default function IntroText({ onComplete }: IntroTextProps) {
             alt=""
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/55 via-navy-dark/40 to-navy-dark/75" />
+          <div className="absolute inset-0 bg-black/60" />
         </motion.div>
       </AnimatePresence>
 
@@ -145,13 +103,13 @@ export default function IntroText({ onComplete }: IntroTextProps) {
             animate="center"
             exit="exit"
             transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center"
+            className="text-center px-8"
           >
             <h1
               className="font-display text-white leading-none"
               style={{
-                fontSize: 'clamp(5rem, 18vw, 15rem)',
-                fontWeight: 300,
+                fontSize: 'clamp(4rem, 14vw, 13rem)',
+                fontWeight: 700,
                 letterSpacing: '-0.02em',
               }}
             >
@@ -179,23 +137,6 @@ export default function IntroText({ onComplete }: IntroTextProps) {
           {String(current + 1).padStart(2, '0')} / {String(FRAMES.length).padStart(2, '0')}
         </span>
       </div>
-
-      {/* Scroll cue (first frame) */}
-      {current === 0 && (
-        <motion.div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-10"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-        >
-          <span className="font-body text-white/30 text-xs tracking-[0.25em] uppercase">Scroll</span>
-          <motion.div
-            className="w-px h-10 bg-gradient-to-b from-white/40 to-transparent"
-            animate={{ opacity: [0.3, 1, 0.3], y: [0, 6, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </motion.div>
-      )}
 
       {/* Last-frame cue */}
       {isLast && (
