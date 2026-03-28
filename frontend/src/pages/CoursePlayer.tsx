@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../components/ui/Button'
@@ -6,6 +6,14 @@ import { DifficultyBadge } from '../components/ui/Badge'
 import MCQEngine from '../components/player/MCQEngine'
 import { useUserProgress } from '../lib/useUserProgress'
 import { api } from '../lib/api'
+
+// Global declaration so TypeScript knows window.YT exists
+declare global {
+  interface Window {
+    YT: any
+    onYouTubeIframeAPIReady: () => void
+  }
+}
 
 interface Course {
   id: string
@@ -24,9 +32,14 @@ export default function CoursePlayer() {
   const [error, setError] = useState(false)
   const [activeSectionIndex, setActiveSectionIndex] = useState(0)
   const [showMCQ, setShowMCQ] = useState(false)
-  const [videoProgress, setVideoProgress] = useState(0)
-  const [videoComplete, setVideoComplete] = useState(false)
 
+  const [videoEnded, setVideoEnded] = useState(false)
+  const [quizStarted, setQuizStarted] = useState(false)
+
+  const playerRef = useRef<any>(null)
+  const playerContainerRef = useRef<HTMLDivElement>(null)
+
+  // Fetch course from API
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -44,33 +57,65 @@ export default function CoursePlayer() {
       .finally(() => setLoading(false))
   }, [id, enrolledCourses, enrollCourse])
 
+  // Load YouTube IFrame API script once on mount
   useEffect(() => {
-    setVideoProgress(0)
-    setVideoComplete(false)
-    setShowMCQ(false)
+    if (!document.getElementById('yt-api-script')) {
+      const tag = document.createElement('script')
+      tag.id = 'yt-api-script'
+      tag.src = 'https://www.youtube.com/iframe_api'
+      document.body.appendChild(tag)
+    }
+  }, [])
 
-    // Simulate video watching progress
-    const interval = setInterval(() => {
-      setVideoProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setVideoComplete(true)
-          // Notify backend that video was watched
-          if (authToken && course) {
-            const sectionId = course.syllabus[activeSectionIndex]?.id
-            if (sectionId) {
-              api.progress.videoComplete(course.id, sectionId, authToken).catch(console.warn)
+  // Initialize (or re-initialize) the YouTube player on each section change
+  useEffect(() => {
+    if (!course) return
+    const videoId = course.syllabus[activeSectionIndex]?.videoId
+    if (!videoId) return
+
+    const initPlayer = () => {
+      if (playerRef.current) {
+        playerRef.current.destroy()
+        playerRef.current = null
+      }
+      if (playerContainerRef.current) {
+        playerContainerRef.current.innerHTML = ''
+        const div = document.createElement('div')
+        div.id = 'yt-player'
+        playerContainerRef.current.appendChild(div)
+      }
+      playerRef.current = new window.YT.Player('yt-player', {
+        videoId,
+        playerVars: { rel: 0, modestbranding: 1 },
+        width: '100%',
+        height: '100%',
+        events: {
+          onStateChange: (event: any) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              setVideoEnded(true)
+              // Notify backend that video was watched
+              if (authToken && course) {
+                const sectionId = course.syllabus[activeSectionIndex]?.id
+                if (sectionId) {
+                  api.progress.videoComplete(course.id, sectionId, authToken).catch(console.warn)
+                }
+              }
             }
-          }
-          setTimeout(() => setShowMCQ(true), 1000)
-          return 100
-        }
-        return prev + 1
+          },
+        },
       })
-    }, 150)
+    }
 
-    return () => clearInterval(interval)
-  }, [activeSectionIndex])
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer
+    }
+
+    setVideoEnded(false)
+    setQuizStarted(false)
+    setShowMCQ(false)
+  }, [activeSectionIndex, course])
 
   if (loading) {
     return (
@@ -91,7 +136,6 @@ export default function CoursePlayer() {
     )
   }
 
-  // course is non-null after this point
   const c = course!
   const activeSection = c.syllabus[activeSectionIndex]
   const completedIds = completedSections[c.id] ?? []
@@ -106,6 +150,8 @@ export default function CoursePlayer() {
     if (!isUnlocked(idx)) return
     setActiveSectionIndex(idx)
     setShowMCQ(false)
+    setVideoEnded(false)
+    setQuizStarted(false)
     setCurrentSection(c.id, c.syllabus[idx].id)
   }
 
@@ -124,8 +170,8 @@ export default function CoursePlayer() {
     if (idx !== -1) {
       setActiveSectionIndex(idx)
       setShowMCQ(false)
-      setVideoComplete(false)
-      setVideoProgress(0)
+      setVideoEnded(false)
+      setQuizStarted(false)
     }
   }
 
@@ -168,46 +214,45 @@ export default function CoursePlayer() {
         <div className="grid lg:grid-cols-[1fr_340px] gap-8">
           {/* Left: Video + MCQ */}
           <div className="space-y-6">
-            {/* Video Player */}
             <div className="glass-navy rounded-2xl overflow-hidden">
-              <div className="aspect-video bg-[#111] relative border-b-2 border-[#111]">
-                <iframe
-                  key={activeSection.videoId}
-                  src={`https://www.youtube.com/embed/${activeSection.videoId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1`}
-                  title={activeSection.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full pointer-events-none"
-                />
-                
-                {/* Progress Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
-                  <motion.div 
-                    className="h-full bg-[#FFCBA4]" 
-                    style={{ width: `${videoProgress}%` }}
-                  />
+              <div className="aspect-video bg-black relative">
+                <div ref={playerContainerRef} className="absolute inset-0 w-full h-full">
+                  <div id="yt-player" className="w-full h-full" />
                 </div>
               </div>
-              
-              <div className="p-6 bg-white flex items-center justify-between">
+
+              <div className="p-5 flex items-center justify-between">
                 <div>
-                  <h4 className="font-display text-[#111] text-xl font-bold">{activeSection.title}</h4>
-                  <div className="flex gap-4 mt-2">
-                    <span className="font-body text-[#666] text-xs">⏱ {activeSection.duration}</span>
-                    <span className="font-body text-[#111] text-xs font-bold uppercase tracking-wider">
-                      {videoComplete ? '✓ Video Finish' : `Watching... ${videoProgress}%`}
-                    </span>
-                  </div>
+                  <p className="font-display text-ink text-lg">{activeSection.title}</p>
+                  <p className="font-body text-ink-muted text-sm mt-1">⏱ {activeSection.duration}</p>
                 </div>
-                {!videoComplete && (
-                  <div className="bg-[#111] text-[#FFCBA4] px-4 py-2 border-2 border-[#111] font-body text-xs font-bold uppercase tracking-widest" style={{ boxShadow: '4px 4px 0 #333' }}>
-                    🔒 Quiz Locked 
+
+                {!completedIds.includes(activeSection.id) && !quizStarted && (
+                  <div className="text-right">
+                    {!videoEnded ? (
+                      <div className="flex items-center gap-2 text-ink-muted">
+                        <span className="text-xl">🔒</span>
+                        <div>
+                          <p className="font-body text-xs font-semibold">Quiz Locked</p>
+                          <p className="font-body text-xs opacity-60">Finish video to unlock</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                        onClick={() => { setQuizStarted(true); setShowMCQ(true) }}
+                        className="bg-gold text-white font-body font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-gold/90 active:scale-95 transition-all shadow-lg shadow-gold/25"
+                      >
+                        🎯 Start Quiz
+                      </motion.button>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* MCQ */}
             <AnimatePresence>
               {showMCQ && (
                 <motion.div
@@ -288,7 +333,6 @@ export default function CoursePlayer() {
                 )
               })}
             </div>
-
             <div className="mt-6 pt-5 border-t border-ink/8">
               <p className="font-body text-ink-muted text-xs text-center">
                 Complete each section to unlock the next
