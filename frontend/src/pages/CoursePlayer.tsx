@@ -6,6 +6,7 @@ import { DifficultyBadge } from '../components/ui/Badge'
 import MCQEngine from '../components/player/MCQEngine'
 import { useUserProgress } from '../lib/useUserProgress'
 import { api } from '../lib/api'
+import { initConceptGraph } from '../lib/conceptEngine'
 
 // Global declaration so TypeScript knows window.YT exists
 declare global {
@@ -39,6 +40,9 @@ export default function CoursePlayer() {
 
   const playerRef = useRef<any>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
+
+  // Load concept graph for MCQ diagnosis
+  useEffect(() => { initConceptGraph() }, [])
 
   // Fetch course from API
   useEffect(() => {

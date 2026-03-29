@@ -11,13 +11,14 @@ type MCQState = 'answering' | 'correct' | 'wrong' | 'approach_input' | 'analysis
 
 export interface MCQQuestion {
   id: string
-  concept: string
+  conceptTag: string
+  concept?: string // legacy alias
   question: string
   options: string[]
   correctIndex?: number // optional because backend might strip it
   explanation: string
-  difficulty: string
-  variant: number
+  difficulty?: string
+  variant?: number
 }
 
 interface MCQEngineProps {
@@ -76,7 +77,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
 
     recordMCQAttempt({
       questionId: currentQ.id,
-      concept: currentQ.concept,
+      concept: (currentQ.conceptTag ?? currentQ.concept ?? ''),
       courseId: props.courseId,
       sectionId: props.sectionId,
       correct: isCorrect,
@@ -101,7 +102,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
 
     if (isCorrect) {
       setMcqState('correct')
-      updateConfidence(currentQ.concept, 10)
+      updateConfidence((currentQ.conceptTag ?? currentQ.concept ?? ''), 10)
       // Also mark locally
       completeSection(props.courseId, props.sectionId)
       setTimeout(() => {
@@ -109,7 +110,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
       }, 2500)
     } else {
       setMcqState('wrong')
-      markWeakConcept(currentQ.concept)
+      markWeakConcept((currentQ.conceptTag ?? currentQ.concept ?? ''))
       // Call parent to reset UI immediately (progress refresh will pull true state from backend)
       if (result && !result.correct && result.restartFromSectionId) {
         onRestartFromSection?.(result.restartFromSectionId)
@@ -131,7 +132,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
         selectedIndex: selectedIndex!,
         correctIndex: actualCorrectIndex,
         studentApproach: approach,
-        conceptTag: currentQ.concept,
+        conceptTag: (currentQ.conceptTag ?? currentQ.concept ?? ''),
         rootCause,
       })
       setLlmExplanation(res.explanation)
@@ -150,10 +151,10 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
   }
 
   // AI analysis data — prefer backend result if available
-  const weakConcepts = [currentQ.concept]
+  const weakConcepts = [(currentQ.conceptTag ?? currentQ.concept ?? '')]
   // In a real app with backend, findRootCause should be async, but here we just use the static graph if backend missed it
   const rootCause = backendResult?.rootCause ?? findRootCause(weakConcepts)
-  const chainNodes = annotateChain(currentQ.concept, weakConcepts)
+  const chainNodes = annotateChain((currentQ.conceptTag ?? currentQ.concept ?? ''), weakConcepts)
 
   // Use the backend's correctIndex if the frontend model stripped it
   const actualCorrectIndex = backendResult?.correctIndex ?? currentQ.correctIndex ?? -1
@@ -203,7 +204,7 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
               transition={{ duration: 0.25 }}
             >
               <p className="font-body text-ink-muted text-xs uppercase tracking-wider mb-3">
-                Concept: {currentQ.concept}
+                Concept: {(currentQ.conceptTag ?? currentQ.concept ?? '')}
               </p>
               <p className="font-display text-ink text-lg font-light mb-6 leading-relaxed">
                 {currentQ.question}
