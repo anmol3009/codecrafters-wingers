@@ -118,6 +118,15 @@ export const api = {
   chat: {
     send: (messages: { role: string; content: string }[]) =>
       req<{ reply: string }>('POST', '/chat', { messages }),
+    explainMistake: (payload: {
+      question: string
+      options: string[]
+      selectedIndex: number
+      correctIndex: number
+      studentApproach: string
+      conceptTag: string
+      rootCause: string
+    }) => req<{ explanation: string }>('POST', '/chat/explain-mistake', payload),
   },
 }
 

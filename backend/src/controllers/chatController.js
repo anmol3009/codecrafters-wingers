@@ -32,6 +32,38 @@ Examples:
 
 Keep your answers short, friendly, and helpful. Use bullet points when listing things. If someone asks something completely unrelated to the platform or education, politely say you can only help with SARASWATI-related questions.`
 
+exports.explainMistake = async (req, res) => {
+  try {
+    const { question, options, selectedIndex, correctIndex, studentApproach, conceptTag, rootCause } = req.body
+
+    const systemPrompt = `You are a concise tutor. Write exactly 2-3 sentences:
+1. Pinpoint the flaw in the student's approach
+2. Explain why the correct answer follows from: ${conceptTag}
+3. If root gap differs, mention: "This reveals a gap in ${rootCause}"
+Rules: no re-stating the question, no "great attempt", be precise, use "you".`
+
+    const userMsg = `Question: ${question}
+Options: ${options.map((o, i) => `${i}. ${o}`).join(', ')}
+Student selected: ${options[selectedIndex]}
+Correct: ${options[correctIndex]}
+Student's approach: ${studentApproach}`
+
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 200,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMsg },
+      ],
+    })
+
+    res.json({ explanation: completion.choices[0]?.message?.content ?? '' })
+  } catch (err) {
+    console.error('[ExplainMistake] Error:', err.message)
+    res.status(500).json({ error: 'Failed to generate explanation' })
+  }
+}
+
 exports.chat = async (req, res) => {
   try {
     const { messages } = req.body

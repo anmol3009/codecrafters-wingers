@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { DifficultyBadge } from '../components/ui/Badge'
@@ -25,6 +25,7 @@ interface Course {
 
 export default function CoursePlayer() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const { enrolledCourses, enrollCourse, completedSections, completeSection, setCurrentSection, authToken } = useUserProgress()
 
   const [course, setCourse] = useState<Course | null>(null)
@@ -56,6 +57,20 @@ export default function CoursePlayer() {
       })
       .finally(() => setLoading(false))
   }, [id, enrolledCourses, enrollCourse])
+
+  // Deep-link: /courses/:id?section=sectionId jumps to that section
+  useEffect(() => {
+    if (!course) return
+    const sectionId = searchParams.get('section')
+    if (!sectionId) return
+    const idx = course.syllabus.findIndex((s: any) => s.id === sectionId)
+    if (idx !== -1) {
+      setActiveSectionIndex(idx)
+      setShowMCQ(false)
+      setVideoEnded(false)
+      setQuizStarted(false)
+    }
+  }, [course, searchParams])
 
   // Load YouTube IFrame API script once on mount
   useEffect(() => {
@@ -268,6 +283,7 @@ export default function CoursePlayer() {
                     sectionTitle={activeSection.title}
                     courseId={c.id}
                     sectionId={activeSection.id}
+                    syllabusMap={Object.fromEntries(c.syllabus.map((s: any) => [s.id, { title: s.title }]))}
                   />
                 </motion.div>
               )}

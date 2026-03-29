@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { Button } from '../ui/Button'
 import DiagnosisGraph from './DiagnosisGraph'
 import { annotateChain, findRootCause } from '../../lib/conceptEngine'
@@ -27,6 +28,8 @@ interface MCQEngineProps {
   sectionId: string
   /** Called when backend says to restart from a given section */
   onRestartFromSection?: (sectionId: string) => void
+  /** Map of sectionId → { title } for showing clickable video links */
+  syllabusMap?: Record<string, { title: string }>
 }
 
 const COMMON_APPROACHES = [
@@ -44,13 +47,16 @@ function pickQuestion(questions: MCQQuestion[], usedIds: string[]): MCQQuestion 
   return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : {} as MCQQuestion
 }
 
-export default function MCQEngine({ questions, onComplete, sectionTitle, onRestartFromSection, ...props }: MCQEngineProps) {
+export default function MCQEngine({ questions, onComplete, sectionTitle, onRestartFromSection, syllabusMap, ...props }: MCQEngineProps) {
   const [usedIds, setUsedIds] = useState<string[]>([])
   const [currentQ, setCurrentQ] = useState<MCQQuestion>(() => pickQuestion(questions, []))
   const [mcqState, setMcqState] = useState<MCQState>('answering')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [approach, setApproach] = useState('')
   const [backendResult, setBackendResult] = useState<McqSubmitResponse | null>(null)
+  const [llmExplanation, setLlmExplanation] = useState<string | null>(null)
+  const [llmLoading, setLlmLoading] = useState(false)
+  const [llmError, setLlmError] = useState(false)
   const { markWeakConcept, updateConfidence, recordMCQAttempt, authToken, completeSection, resetProgressFromSection } = useUserProgress()
 
   const loadNewQuestion = useCallback(() => {
@@ -58,6 +64,8 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
     setCurrentQ(next)
     setSelectedIndex(null)
     setApproach('')
+    setLlmExplanation(null)
+    setLlmError(false)
     setMcqState('answering')
   }, [questions, usedIds])
 
@@ -109,9 +117,29 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
     }
   }
 
-  function handleSubmitApproach() {
+  async function handleSubmitApproach() {
     setUsedIds(prev => [...prev, currentQ.id])
-    setMcqState('analysis')
+    setLlmExplanation(null)
+    setLlmError(false)
+    setLlmLoading(true)
+    setMcqState('analysis') // transition immediately; LLM fills in async
+
+    try {
+      const res = await api.chat.explainMistake({
+        question: currentQ.question,
+        options: currentQ.options,
+        selectedIndex: selectedIndex!,
+        correctIndex: actualCorrectIndex,
+        studentApproach: approach,
+        conceptTag: currentQ.concept,
+        rootCause,
+      })
+      setLlmExplanation(res.explanation)
+    } catch {
+      setLlmError(true)
+    } finally {
+      setLlmLoading(false)
+    }
   }
 
   function handleRestart() {
@@ -316,18 +344,53 @@ export default function MCQEngine({ questions, onComplete, sectionTitle, onResta
                 </p>
               </div>
 
-              {/* Concept chain */}
               {/* Diagnosis Graph */}
-              <div className="mb-8">
+              <div className="mb-5">
                 <DiagnosisGraph chain={chainNodes} rootCause={rootCause} />
               </div>
 
-              <div className="bg-[#FFFAF6] border-2 border-[#111] p-6 mb-8" style={{ boxShadow: '6px 6px 0 #FFCBA4' }}>
-                <p className="font-body text-[#111] text-sm leading-relaxed">
-                  <span className="font-bold">Next Step:</span> We recommend pausing this section and revisiting <strong>{rootCause}</strong>. 
-                  Our analysis shows that clarifying this prerequisite will make {currentQ.concept} much easier to grasp.
-                </p>
+              {/* LLM explanation card */}
+              <div className="bg-[#FFFAF6] border-2 border-[#111] p-5 mb-5" style={{ boxShadow: '4px 4px 0 #111' }}>
+                <p className="font-body text-[#111] text-xs font-bold uppercase tracking-wider mb-2">Why your approach was wrong</p>
+                {llmLoading && (
+                  <div className="flex items-center gap-2 py-1">
+                    {[0, 1, 2].map(i => (
+                      <motion.div
+                        key={i}
+                        className="w-2 h-2 bg-[#111] rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </div>
+                )}
+                {llmError && (
+                  <p className="font-body text-[#555] text-sm italic">Could not load explanation — please retry.</p>
+                )}
+                {llmExplanation && (
+                  <p className="font-body text-[#111] text-sm leading-relaxed">{llmExplanation}</p>
+                )}
               </div>
+
+              {/* Clickable video link */}
+              {(() => {
+                const restartId = backendResult?.restartFromSectionId
+                if (!restartId) return null
+                const isSameSection = restartId === props.sectionId
+                const sectionTitle = syllabusMap?.[restartId]?.title
+                return (
+                  <Link
+                    to={`/courses/${props.courseId}?section=${restartId}`}
+                    className="flex items-center gap-3 bg-white border-2 border-[#111] px-5 py-3 mb-5 font-body text-sm font-bold text-[#111] hover:bg-[#FFCBA4] transition-colors"
+                    style={{ boxShadow: '3px 3px 0 #111' }}
+                  >
+                    <span className="text-lg">{isSameSection ? '🔁' : '📺'}</span>
+                    {isSameSection
+                      ? 'Re-watch this video'
+                      : `Watch "${sectionTitle ?? restartId}" first`}
+                  </Link>
+                )
+              })()}
 
               <div className="flex gap-4">
                 <Button variant="ghost" className="flex-1" onClick={handleRestart}>
