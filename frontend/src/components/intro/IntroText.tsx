@@ -8,7 +8,7 @@ const FRAMES = [
     bg: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1920&q=80',
   },
   {
-    word: 'Leave',
+    word: 'Live',
     sub: 'a mark on the minds of tomorrow',
     bg: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80',
   },
